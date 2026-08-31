@@ -64,4 +64,5 @@ export interface ReglagesEntreprise {
   texteBannierePromo: string;
   urlImagePromo?: string | null;
   urlPhotoProfil?: string | null;
+  urlVideoHero?: string | null;
 }

@@ -19,6 +19,7 @@ export const REGLAGES_PAR_DEFAUT: ReglagesEntreprise = {
   texteBannierePromo: "Arrivage de silures frais gros calibres ce week-end !",
   urlImagePromo: null,
   urlPhotoProfil: null,
+  urlVideoHero: "https://assets.mixkit.co/videos/preview/mixkit-clear-water-in-a-lake-1199-large.mp4",
 };
 
 /**
