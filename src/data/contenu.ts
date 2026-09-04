@@ -5,7 +5,7 @@ import { ReglagesEntreprise, OffreFormation, RecetteCuisine, Langue } from "@/ty
  */
 export const REGLAGES_PAR_DEFAUT: ReglagesEntreprise = {
   id: "ds_principal",
-  nom: "@DS",
+  nom: "/images/logo-symbole.png",
   slogan: "ÉLEVER AVEC SOIN, DISTRIBUER AVEC PASSION",
   sloganEn: "RAISED WITH CARE, DISTRIBUTED WITH PASSION",
   telephoneBrut: "237691165192",

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { EcranChargementIntro } from "@/components/client/EcranChargementIntro";
 import { CommandeSilureCarte } from "@/components/client/CommandeSilureCarte";
+import { NavBar } from "@/components/client/NavBar";
+
 
 export default function PageVitrine() {
   const { chargerReglages, chargerBassins } = useAppStore();
@@ -21,9 +23,9 @@ export default function PageVitrine() {
         <EcranChargementIntro auTermine={() => setIntroAffichee(false)} />
       )}
 
-      
+      <NavBar/>
 
-      <main className="max-w-xl mx-auto px-4 pt-4 pb-28 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 pt-4 pb-28 space-y-6">
         <section id="commander">
           <CommandeSilureCarte />
         </section>
