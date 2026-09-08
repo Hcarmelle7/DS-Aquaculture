@@ -5,7 +5,8 @@ import { ReglagesEntreprise, OffreFormation, RecetteCuisine, Langue } from "@/ty
  */
 export const REGLAGES_PAR_DEFAUT: ReglagesEntreprise = {
   id: "ds_principal",
-  nom: "/images/logo-symbole.png",
+  nom: "@DS",
+  logo: "/images/logo-symbole.png",
   slogan: "ÉLEVER AVEC SOIN, DISTRIBUER AVEC PASSION",
   sloganEn: "RAISED WITH CARE, DISTRIBUTED WITH PASSION",
   telephoneBrut: "237691165192",
@@ -19,7 +20,7 @@ export const REGLAGES_PAR_DEFAUT: ReglagesEntreprise = {
   texteBannierePromo: "Arrivage de silures frais gros calibres ce week-end !",
   urlImagePromo: null,
   urlPhotoProfil: null,
-  urlVideoHero: "https://assets.mixkit.co/videos/preview/mixkit-clear-water-in-a-lake-1199-large.mp4",
+  urlVideoHero: "/videos/pescos.mp4",
 };
 
 /**

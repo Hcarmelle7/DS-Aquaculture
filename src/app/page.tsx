@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { EcranChargementIntro } from "@/components/client/EcranChargementIntro";
 import { CommandeSilureCarte } from "@/components/client/CommandeSilureCarte";
+import { Formations } from "@/components/client/Formations";
+import { Recettes } from "@/components/client/Recettes";
+
 import { NavBar } from "@/components/client/NavBar";
 
 
@@ -28,6 +31,12 @@ export default function PageVitrine() {
       <main className="max-w-4xl mx-auto px-4 pt-4 pb-28 space-y-6">
         <section id="commander">
           <CommandeSilureCarte />
+        </section>
+        <section id="formations">
+          <Formations />
+        </section>
+        <section id="recettes">
+          <Recettes />
         </section>
       </main>
 

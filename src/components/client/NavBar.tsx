@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useAppStore } from "@/store/useAppStore";
 import { TRADUCTIONS } from "@/data/contenu";
+import { LogoVideoClip } from "@/components/ui/LogoVideoClip";
 import {
   Menu,
   X,
@@ -11,11 +12,9 @@ import {
   GraduationCap,
   Utensils,
   Shield,
-  Globe,
   Sun,
   Moon,
   PhoneCall,
-  Waves,
 } from "lucide-react";
 
 export const NavBar: React.FC = () => {
@@ -48,8 +47,10 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
+      {/* 1. BARRE DE NAVIGATION SUPÉRIEURE STICKY */}
       <nav className="sticky top-0 z-40 w-full bg-[#050811]/90 backdrop-blur-xl border-b border-slate-800/80">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+          {/* Logo d'origine */}
           <Link
             href="/"
             className="flex items-center gap-2 group select-none"
@@ -59,12 +60,12 @@ export const NavBar: React.FC = () => {
               <img src="/images/logo.png" alt="" />
             </div>
             <div className="flex flex-col">
-              <img src={reglages.nom} alt="logo" className=" h-7" />
-              
+              <img src={reglages.logo} alt="logo" className="h-7" />
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
+          {/* Liens desktop */}
+          {/* <div className="hidden md:flex items-center gap-6">
             {liensNavigation.map((lien) => {
               const Icone = lien.icone;
               return (
@@ -78,10 +79,10 @@ export const NavBar: React.FC = () => {
                 </a>
               );
             })}
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-2">
-            {/* Commutateur de langues */}
+            {/* Sélecteur de langue */}
             <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 text-[11px] font-bold">
               <button
                 onClick={() => definirLangue("fr")}
@@ -114,64 +115,120 @@ export const NavBar: React.FC = () => {
               {theme === "sombre" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-300" />}
             </button>
 
-            {/* Bouton Menu */}
+            {/* Bouton d'ouverture du menu */}
             <button
-              onClick={() => setEstOuvert(!estOuvert)}
+              onClick={() => setEstOuvert(true)}
               aria-label="Ouvrir le menu"
-              className="md:hidden w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition active:scale-95"
+              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition active:scale-95"
             >
-              {estOuvert ? <X className="w-5 h-5 text-[#00d2ff]" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
+      </nav>
 
-        {/* Menu Collapse */}
+      {/* 2. VOLET  */}
+      <div
+        className={`fixed inset-0 z-50 transition-all duration-500 ease-in-out ${
+          estOuvert ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Fond flouté */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out border-t border-slate-800/80 bg-[#050811]/98 backdrop-blur-2xl ${
-            estOuvert ? "max-h-[450px] opacity-100 py-4" : "max-h-0 opacity-0 py-0"
-          }`}
-        >
-          <div className="max-w-xl mx-auto px-4 space-y-2">
-            {liensNavigation.map((lien) => {
-              const Icone = lien.icone;
-              return (
-                <a
-                  key={lien.id}
-                  href={lien.href}
-                  onClick={fermerMenu}
-                  className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/70 text-sm font-bold text-white hover:border-[#00d2ff]/40 hover:bg-cyan-950/20 active:scale-[0.98] transition"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-[#00d2ff]">
-                    <Icone className="w-4 h-4" />
-                  </div>
-                  <span>{lien.label}</span>
-                </a>
-              );
-            })}
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          onClick={fermerMenu}
+        />
 
-            {/* Appel direct */}
-            <a
-              href={`tel:${reglages.telephoneBrut}`}
-              className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/70 text-sm font-bold text-slate-300 hover:text-white transition"
-            >
-              <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-[#00d2ff]">
-                <PhoneCall className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-slate-500 uppercase">Service client</span>
-                <span>{reglages.telephoneAffichage}</span>
-              </div>
-            </a>
+        <div className="relative w-full h-full flex justify-between">
+          {/* Section Gauche  */}
+          <div
+            className="hidden md:flex flex-1 items-center justify-center p-8 cursor-pointer select-none"
+            onClick={fermerMenu}
+          >
+            <div className="flex flex-col items-center gap-2 transition-transform duration-500 hover:scale-105">
+              <LogoVideoClip className="w-90 h-94 drop-shadow-[0_10px_35px_rgba(0,0,0,0.5)]" tailleTexte="0.45" />
+              <p className="text-xs font-black uppercase tracking-[0.3em] text-white/75 text-center max-w-xs">
+                {reglages.slogan}
+              </p>
+            </div>
+          </div>
 
-            {/* Accès Administration */}
-            <div className="pt-2 border-t border-slate-800/60 mt-2">
+          {/* Section Droite */}
+          <div
+            className={`w-full md:w-[560px] h-full bg-[#050811] border-l border-slate-800/80 shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto transition-transform duration-500 ease-out md:rounded-l-[40px] ${
+              estOuvert ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="flex items-center justify-between pb-2  border-b border-slate-600/90">
+              <div className=" hidden md:block md:flex items-center gap-2">
+                <div className="w-8 h-8 bg-cyan-950/80 border border-[#00d2ff]/40 flex items-center justify-center text-[#00d2ff]">
+                  <img src="/images/logo.png" alt="" />
+                </div>
+                <img src={reglages.logo} alt="logo" className="h-6" />
+              </div>
+
+              <LogoVideoClip className="block md:hidden w-18 h-18 " tailleTexte="0.45" />
+
+
+              <button
+                onClick={fermerMenu}
+                aria-label="Fermer le menu"
+                className="w-10 h-10  rounded-full bg-slate-900 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-600 hover:text-[#00d2ff] transition"
+              >
+                <X className="w-5 h-5 " />
+              </button>
+            </div>
+
+            {/* Logo  */}
+            {/* <div className="flex md:hidden justify-center my-4 py-2">
+              <LogoVideoClip className="w-48 h-24" tailleTexte="0.48" />
+            </div> */}
+
+            {/* Liens de navigation */}
+            <div className="space-y-4 my-auto py-6">
+              {liensNavigation.map((lien) => {
+                const Icone = lien.icone;
+                return (
+                  <a
+                    key={lien.id}
+                    href={lien.href}
+                    onClick={fermerMenu}
+                    className="group flex items-center justify-between py-4 border-b border-slate-600/80 text-lg sm:text-xl font-black text-slate-200 hover:text-[#00d2ff] transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Icone className="w-5 h-5 text-[#00d2ff] group-hover:scale-110 transition-transform" />
+                      <span>{lien.label}</span>
+                    </div>
+                    {/* <span className="text-xs text-slate-600 group-hover:text-[#00d2ff] group-hover:translate-x-1 transition-all">
+                      →
+                    </span> */}
+                  </a>
+                );
+              })}
+            </div>
+
+            {/* footer */}
+            <div className="space-y-3 pt-4 border-t border-slate-800/80">
+              <a
+                href={`tel:${reglages.telephoneBrut}`}
+                className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/70 text-sm font-bold text-slate-300 hover:text-white transition"
+              >
+                <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-[#00d2ff]">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-slate-500 uppercase">Service client</span>
+                  <span>{reglages.telephoneAffichage}</span>
+                </div>
+              </a>
+
               <Link
                 href="/admin"
                 onClick={fermerMenu}
                 className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold hover:bg-amber-500/15 transition"
               >
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
+                  <Shield className="w-4 h-4 text-amber-400" />
                   <span>{t.navigationAdmin}</span>
                 </div>
                 <span className="text-[10px] uppercase font-semibold text-amber-400/80">Accès gérant →</span>
@@ -179,7 +236,7 @@ export const NavBar: React.FC = () => {
             </div>
           </div>
         </div>
-      </nav>
+      </div>
     </>
   );
 };
