@@ -24,7 +24,7 @@ export const Recettes: React.FC = () => {
           <Utensils className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-white">{t.titreRecettes}</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white transition-colors duration-300">{t.titreRecettes}</h2>
           <p className="text-xs text-slate-400">{t.sousTitreRecettes}</p>
         </div>
       </div>
@@ -49,7 +49,7 @@ export const Recettes: React.FC = () => {
                     <span>•</span>
                     <span>{r.difficulte}</span>
                   </div>
-                  <h3 className="text-sm font-bold text-white">{r.titre}</h3>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white transition-colors duration-300">{r.titre}</h3>
                 </div>
 
                 <button

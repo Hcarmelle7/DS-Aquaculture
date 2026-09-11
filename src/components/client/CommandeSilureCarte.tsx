@@ -98,7 +98,7 @@ export const CommandeSilureCarte: React.FC = () => {
             <Fish className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-extrabold text-white">{t.titreCommande}</h2>
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white transition-colors duration-300">{t.titreCommande}</h2>
             <p className="text-[11px] text-slate-400 font-medium">{t.badgeLivraison}</p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export const CommandeSilureCarte: React.FC = () => {
               <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#00d2ff]">
                 {t.etiquetteVivant}
               </div>
-              <div className="text-sm font-bold text-white mt-0.5">{t.poissonVivant}</div>
+              <div className="text-sm font-bold text-slate-700 dark:text-white mt-0.5 transition-colors duration-300">{t.poissonVivant}</div>
               <div className="text-xs font-bold text-slate-300 mt-1">
                 {reglages.prixVivant.toLocaleString("fr-FR")} FCFA <span className="text-[10px] font-normal text-slate-400">/ Kg</span>
               </div>
@@ -157,7 +157,7 @@ export const CommandeSilureCarte: React.FC = () => {
               <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#00d2ff]">
                 {t.etiquetteNettoye}
               </div>
-              <div className="text-sm font-bold text-white mt-0.5">{t.poissonNettoye}</div>
+              <div className="text-sm font-bold text-slate-700 dark:text-white mt-0.5 transition-colors duration-300">{t.poissonNettoye}</div>
               <div className="text-xs font-bold text-slate-300 mt-1">
                 {reglages.prixNettoye.toLocaleString("fr-FR")} FCFA <span className="text-[10px] font-normal text-slate-400">/ Kg</span>
               </div>
@@ -179,20 +179,20 @@ export const CommandeSilureCarte: React.FC = () => {
             <button
               type="button"
               onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))}
-              className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition"
+              className="w-11 h-11 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
             >
               <Minus className="w-4 h-4" />
             </button>
 
             <div className="text-center">
-              <span className="text-2xl font-black text-white">{poidsKg}</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-white transition-colors duration-300">{poidsKg}</span>
               <span className="text-xs font-bold text-slate-400 ml-1">Kg</span>
             </div>
 
             <button
               type="button"
               onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))}
-              className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition"
+              className="w-11 h-11 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -221,7 +221,7 @@ export const CommandeSilureCarte: React.FC = () => {
             placeholder={t.libelleNomClient}
             value={nomClient}
             onChange={(e) => setNomClient(e.target.value)}
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#00d2ff] outline-none transition"
+            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
           />
 
           <input
@@ -230,14 +230,14 @@ export const CommandeSilureCarte: React.FC = () => {
             placeholder={t.libelleTelephoneClient}
             value={telephone}
             onChange={(e) => setTelephone(e.target.value)}
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#00d2ff] outline-none transition"
+            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
           />
 
           <div className="grid grid-cols-2 gap-2">
             <select
               value={ville}
               onChange={(e) => setVille(e.target.value)}
-              className="bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-[#00d2ff]"
+              className="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#00d2ff] transition-all duration-300"
             >
               <option value="Douala">Douala</option>
               <option value="Yaoundé">Yaoundé</option>
@@ -249,7 +249,7 @@ export const CommandeSilureCarte: React.FC = () => {
               placeholder={t.espaceReserveQuartier}
               value={quartier}
               onChange={(e) => setQuartier(e.target.value)}
-              className="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#00d2ff] outline-none transition"
+              className="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
             />
           </div>
 
@@ -258,7 +258,7 @@ export const CommandeSilureCarte: React.FC = () => {
             placeholder={langue === "fr" ? "Remarques (ex: découpe spécifique, heure souhaitée)" : "Special notes (e.g. cutting size, delivery time)"}
             value={remarques}
             onChange={(e) => setRemarques(e.target.value)}
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-[#00d2ff] outline-none transition"
+            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
           />
         </div>
 

@@ -8,12 +8,13 @@ import { Formations } from "@/components/client/Formations";
 import { Recettes } from "@/components/client/Recettes";
 
 import { NavBar } from "@/components/client/NavBar";
+import { APropos } from "@/components/client/APropos";
 
 
 export default function PageVitrine() {
   const { chargerReglages, chargerBassins } = useAppStore();
   const [introAffichee, setIntroAffichee] = useState(true);
-
+  const { reglages } = useAppStore();
   // Chargement des données depuis Supabase
   useEffect(() => {
     chargerReglages();
@@ -21,23 +22,37 @@ export default function PageVitrine() {
   }, [chargerReglages, chargerBassins]);
 
   return (
-    <div className="min-h-screen bg-[#050811] text-white">
+    <div className="min-h-screen transition-colors duration-300">
       {introAffichee && (
         <EcranChargementIntro auTermine={() => setIntroAffichee(false)} />
       )}
 
-      <NavBar/>
+      <NavBar />
+
+
 
       <main className="max-w-4xl mx-auto px-4 pt-4 pb-28 space-y-6">
-        <section id="commander">
-          <CommandeSilureCarte />
-        </section>
-        <section id="formations">
-          <Formations />
-        </section>
-        <section id="recettes">
-          <Recettes />
-        </section>
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-14 pb-28">
+
+          {/* Bannière Promotionnelle Vive */}
+          {reglages.texteBannierePromo && (
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-500/20 via-sky-500/10 to-emerald-500/20 border border-cyan-500/30 text-center font-bold text-xs sm:text-sm text-cyan-600 dark:text-cyan-300 shadow-sm">
+              ✨ {reglages.texteBannierePromo}
+            </div>
+          )}
+          <section id="a-propos">
+            <APropos />
+          </section>
+          <section id="commander">
+            <CommandeSilureCarte />
+          </section>
+          <section id="formations">
+            <Formations />
+          </section>
+          <section id="recettes">
+            <Recettes />
+          </section>
+        </div>
       </main>
 
     </div>

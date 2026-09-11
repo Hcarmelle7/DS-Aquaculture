@@ -31,7 +31,7 @@ export const Formations: React.FC = () => {
           <GraduationCap className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-white">{t.titreFormations}</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white transition-colors duration-300">{t.titreFormations}</h2>
           <p className="text-xs text-slate-400">{t.sousTitreFormations}</p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export const Formations: React.FC = () => {
                   <Clock className="w-3 h-3" />
                   {f.duree}
                 </span>
-                <h3 className="text-base font-extrabold text-white leading-tight">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight transition-colors duration-300">
                   {f.titre}
                 </h3>
               </div>

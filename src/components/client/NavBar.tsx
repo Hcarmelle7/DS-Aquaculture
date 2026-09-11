@@ -15,6 +15,7 @@ import {
   Sun,
   Moon,
   PhoneCall,
+  Compass,
 } from "lucide-react";
 
 export const NavBar: React.FC = () => {
@@ -23,6 +24,12 @@ export const NavBar: React.FC = () => {
   const t = TRADUCTIONS[langue];
 
   const liensNavigation = [
+    {
+      id: "a-propos",
+      label: t.navigationAPropos,
+      icone: Compass,
+      href: "#a-propos",
+    },
     {
       id: "commander",
       label: t.navigationBoutique,
@@ -48,7 +55,7 @@ export const NavBar: React.FC = () => {
   return (
     <>
       {/* 1. BARRE DE NAVIGATION SUPÉRIEURE STICKY */}
-      <nav className="sticky top-0 z-40 w-full bg-[#050811]/90 backdrop-blur-xl border-b border-slate-800/80">
+      <nav className="sticky top-0 z-40 w-full bg-[#050811]/90 backdrop-blur-xl border-b border-slate-800/80 transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           {/* Logo d'origine */}
           <Link
@@ -83,24 +90,22 @@ export const NavBar: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {/* Sélecteur de langue */}
-            <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 text-[11px] font-bold">
+            <div className="flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 text-[11px] font-bold transition-colors duration-300">
               <button
                 onClick={() => definirLangue("fr")}
-                className={`px-2 py-1 rounded-lg transition-all ${
-                  langue === "fr"
+                className={`px-2 py-1 rounded-lg transition-all ${langue === "fr"
                     ? "bg-[#00d2ff] text-slate-950"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 FR
               </button>
               <button
                 onClick={() => definirLangue("en")}
-                className={`px-2 py-1 rounded-lg transition-all ${
-                  langue === "en"
+                className={`px-2 py-1 rounded-lg transition-all ${langue === "en"
                     ? "bg-[#00d2ff] text-slate-950"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 EN
               </button>
@@ -110,16 +115,16 @@ export const NavBar: React.FC = () => {
             <button
               onClick={basculerTheme}
               aria-label="Changer le thème"
-              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-[#00d2ff] flex items-center justify-center hover:border-slate-700 transition active:scale-95"
+              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-[#00d2ff] flex items-center justify-center hover:border-slate-700 transition-colors active:scale-95"
             >
-              {theme === "sombre" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-300" />}
+              {theme === "sombre" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-500" />}
             </button>
 
             {/* Bouton d'ouverture du menu */}
             <button
               onClick={() => setEstOuvert(true)}
               aria-label="Ouvrir le menu"
-              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition active:scale-95"
+              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition-colors active:scale-95"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -129,9 +134,8 @@ export const NavBar: React.FC = () => {
 
       {/* 2. VOLET  */}
       <div
-        className={`fixed inset-0 z-50 transition-all duration-500 ease-in-out ${
-          estOuvert ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 transition-all duration-500 ease-in-out ${estOuvert ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         {/* Fond flouté */}
         <div
@@ -146,7 +150,7 @@ export const NavBar: React.FC = () => {
             onClick={fermerMenu}
           >
             <div className="flex flex-col items-center gap-2 transition-transform duration-500 hover:scale-105">
-              <LogoVideoClip className="w-90 h-94 drop-shadow-[0_10px_35px_rgba(0,0,0,0.5)]" tailleTexte="0.45" />
+              <LogoVideoClip className="w-90 h-94 drop-shadow-[0_10px_35px_rgba(0,0,0,0.5)]" />
               <p className="text-xs font-black uppercase tracking-[0.3em] text-white/75 text-center max-w-xs">
                 {reglages.slogan}
               </p>
@@ -155,11 +159,10 @@ export const NavBar: React.FC = () => {
 
           {/* Section Droite */}
           <div
-            className={`w-full md:w-[560px] h-full bg-[#050811] border-l border-slate-800/80 shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto transition-transform duration-500 ease-out md:rounded-l-[40px] ${
-              estOuvert ? "translate-x-0" : "translate-x-full"
-            }`}
+            className={`w-full md:w-[560px] h-full bg-[#050811] border-l border-slate-800/80 shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto transition-transform transition-colors duration-500 ease-out md:rounded-l-[40px] ${estOuvert ? "translate-x-0" : "translate-x-full"
+              }`}
           >
-            <div className="flex items-center justify-between pb-2  border-b border-slate-600/90">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-600/90">
               <div className=" hidden md:block md:flex items-center gap-2">
                 <div className="w-8 h-8 bg-cyan-950/80 border border-[#00d2ff]/40 flex items-center justify-center text-[#00d2ff]">
                   <img src="/images/logo.png" alt="" />
@@ -167,13 +170,13 @@ export const NavBar: React.FC = () => {
                 <img src={reglages.logo} alt="logo" className="h-6" />
               </div>
 
-              <LogoVideoClip className="block md:hidden w-18 h-18 " tailleTexte="0.45" />
+              <LogoVideoClip className="block md:hidden w-18 h-18 " />
 
 
               <button
                 onClick={fermerMenu}
                 aria-label="Fermer le menu"
-                className="w-10 h-10  rounded-full bg-slate-900 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-600 hover:text-[#00d2ff] transition"
+                className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-600 hover:text-[#00d2ff] transition-colors"
               >
                 <X className="w-5 h-5 " />
               </button>
@@ -211,7 +214,7 @@ export const NavBar: React.FC = () => {
             <div className="space-y-3 pt-4 border-t border-slate-800/80">
               <a
                 href={`tel:${reglages.telephoneBrut}`}
-                className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/70 text-sm font-bold text-slate-300 hover:text-white transition"
+                className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-slate-900/50 border border-slate-800/70 text-sm font-bold text-slate-300 hover:text-white transition-colors"
               >
                 <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-[#00d2ff]">
                   <PhoneCall className="w-4 h-4" />
