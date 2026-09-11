@@ -7,6 +7,9 @@ import {
   Bassin,
   ReglagesEntreprise,
   StatutCommande,
+  Lot,
+  ReleveQualiteEau,
+  ReleveNourrissage,
 } from "@/types";
 import { REGLAGES_PAR_DEFAUT } from "@/data/contenu";
 import { supabase } from "@/lib/supabase";
@@ -41,6 +44,14 @@ interface EtatApplication {
   bassins: Bassin[];
   chargerBassins: () => Promise<void>;
   mettreAJourBassin: (id: string, donnees: Partial<Bassin>) => Promise<boolean>;
+
+ 
+  lots: Lot[];
+  relevesQualiteEau: ReleveQualiteEau[];
+  relevesNourrissage: ReleveNourrissage[];
+  ajouterLot: (lot: Omit<Lot, "id" | "creeLe" | "dateArrivee" | "statut" | "quantiteActuelle">) => Promise<Lot | null>;
+  ajouterReleveQualiteEau: (releve: Omit<ReleveQualiteEau, "id" | "creeLe" | "dateReleve">) => Promise<ReleveQualiteEau | null>;
+  ajouterReleveNourrissage: (releve: Omit<ReleveNourrissage, "id" | "creeLe" | "dateNourrissage">) => Promise<ReleveNourrissage | null>;
 }
 
 
@@ -106,6 +117,7 @@ export const useAppStore = create<EtatApplication>()(
               reglages: {
                 id: data.id,
                 nom: data.name,
+                logo: data.logo_url || REGLAGES_PAR_DEFAUT.logo,
                 slogan: data.slogan,
                 sloganEn: data.slogan_en,
                 telephoneBrut: data.phone_raw,
@@ -119,6 +131,7 @@ export const useAppStore = create<EtatApplication>()(
                 texteBannierePromo: data.promo_banner_text,
                 urlImagePromo: data.promo_image_url,
                 urlPhotoProfil: data.avatar_url,
+                urlVideoHero: data.video_hero_url || REGLAGES_PAR_DEFAUT.urlVideoHero,
               },
             });
           }
@@ -342,6 +355,115 @@ export const useAppStore = create<EtatApplication>()(
         } catch (e) {
           console.error("Erreur mise a jour bassin :", e);
           return false;
+        }
+      },
+
+      
+      lots: [],
+      relevesQualiteEau: [],
+      relevesNourrissage: [],
+
+      ajouterLot: async (donneesLot) => {
+        try {
+          const { data, error } = await supabase
+            .from("lots")
+            .insert({
+              bassin_id: donneesLot.bassinId,
+              souche: donneesLot.souche,
+              quantite_initiale: donneesLot.quantiteInitiale,
+              quantite_actuelle: donneesLot.quantiteInitiale,
+              poids_moyen_initial_g: donneesLot.poidsMoyenInitialG,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          const nouveauLot: Lot = {
+            id: data.id,
+            bassinId: data.bassin_id,
+            dateArrivee: data.date_arrivee,
+            souche: data.souche,
+            quantiteInitiale: data.quantite_initiale,
+            quantiteActuelle: data.quantite_actuelle,
+            poidsMoyenInitialG: data.poids_moyen_initial_g,
+            statut: data.statut,
+            creeLe: data.cree_le,
+          };
+
+          set({ lots: [nouveauLot, ...get().lots] });
+          return nouveauLot;
+        } catch (e) {
+          console.error("Erreur ajout lot :", e);
+          return null;
+        }
+      },
+
+      ajouterReleveQualiteEau: async (donneesReleve) => {
+        try {
+          const { data, error } = await supabase
+            .from("releves_qualite_eau")
+            .insert({
+              bassin_id: donneesReleve.bassinId,
+              temperature_c: donneesReleve.temperatureC,
+              ph: donneesReleve.ph,
+              oxygene_mgl: donneesReleve.oxygeneMgl,
+              remarques: donneesReleve.remarques,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          const nouveauReleve: ReleveQualiteEau = {
+            id: data.id,
+            bassinId: data.bassin_id,
+            dateReleve: data.date_releve,
+            temperatureC: data.temperature_c,
+            ph: data.ph,
+            oxygeneMgl: data.oxygene_mgl,
+            remarques: data.remarques,
+            creeLe: data.cree_le,
+          };
+
+          set({ relevesQualiteEau: [nouveauReleve, ...get().relevesQualiteEau] });
+          return nouveauReleve;
+        } catch (e) {
+          console.error("Erreur ajout releve qualite eau :", e);
+          return null;
+        }
+      },
+
+      ajouterReleveNourrissage: async (donneesReleve) => {
+        try {
+          const { data, error } = await supabase
+            .from("releves_nourrissage")
+            .insert({
+              lot_id: donneesReleve.lotId,
+              type_aliment: donneesReleve.typeAliment,
+              quantite_kg: donneesReleve.quantiteKg,
+              observations: donneesReleve.observations,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          const nouveauReleve: ReleveNourrissage = {
+            id: data.id,
+            lotId: data.lot_id,
+            dateNourrissage: data.date_nourrissage,
+            typeAliment: data.type_aliment,
+            quantiteKg: data.quantite_kg,
+            observations: data.observations,
+            creeLe: data.cree_le,
+          };
+
+          set({ relevesNourrissage: [nouveauReleve, ...get().relevesNourrissage] });
+          return nouveauReleve;
+        } catch (e) {
+          console.error("Erreur ajout releve nourrissage :", e);
+          return null;
         }
       },
     }),

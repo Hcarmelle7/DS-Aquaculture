@@ -24,10 +24,47 @@ export interface Bassin {
   id: string;
   nom: string;
   categorie: 'alevinage' | 'grossissement' | 'geniteurs';
-  nombrePoissons: number;
-  poidsMoyenKg: number;
-  biomasseTotaleKg: number;
+  capaciteMaxPoissons?: number;
+  creeLe?: string;
+  
+  // Champs calculés ou maintenus pour la rétrocompatibilité (V1)
+  nombrePoissons?: number;
+  poidsMoyenKg?: number;
+  biomasseTotaleKg?: number;
   dernierNourrissage?: string;
+}
+
+export interface Lot {
+  id: string;
+  bassinId: string;
+  dateArrivee: string;
+  souche: string;
+  quantiteInitiale: number;
+  quantiteActuelle: number;
+  poidsMoyenInitialG: number;
+  statut: 'en_cours' | 'recolte';
+  creeLe: string;
+}
+
+export interface ReleveQualiteEau {
+  id: string;
+  bassinId: string;
+  dateReleve: string;
+  temperatureC: number;
+  ph: number;
+  oxygeneMgl: number;
+  remarques?: string;
+  creeLe: string;
+}
+
+export interface ReleveNourrissage {
+  id: string;
+  lotId: string;
+  dateNourrissage: string;
+  typeAliment: string;
+  quantiteKg: number;
+  observations?: string;
+  creeLe: string;
 }
 
 export interface OffreFormation {
@@ -51,6 +88,7 @@ export interface RecetteCuisine {
 export interface ReglagesEntreprise {
   id: string;
   nom: string;
+  logo: string;
   slogan: string;
   sloganEn: string;
   telephoneBrut: string;
@@ -65,4 +103,13 @@ export interface ReglagesEntreprise {
   urlImagePromo?: string | null;
   urlPhotoProfil?: string | null;
   urlVideoHero?: string | null;
+}
+
+export interface TemoignageClient {
+  id: string;
+  nomAuteur: string;
+  ville: string;
+  note: number;
+  commentaire: string;
+  creeLe: string;
 }
