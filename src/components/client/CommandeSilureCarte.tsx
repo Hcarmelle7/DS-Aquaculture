@@ -15,6 +15,9 @@ import {
   Check,
   Plus,
   Minus,
+  AlertCircle,
+  ShoppingBag,
+  MapPin,
 } from "lucide-react";
 
 export const CommandeSilureCarte: React.FC = () => {
@@ -22,14 +25,16 @@ export const CommandeSilureCarte: React.FC = () => {
   const t = TRADUCTIONS[langue];
 
   // États du formulaire
-  const [preparation, setPreparation] = useState<PreparationPoisson>("vivant");
-  const [poidsKg, setPoidsKg] = useState<number>(2.5);
+  const [preparation, setPreparation] = useState<"vivant" | "nettoye">("vivant");
+  const [poidsKg, setPoidsKg] = useState<number>(3);
   const [nomClient, setNomClient] = useState<string>("");
   const [telephone, setTelephone] = useState<string>("");
   const [ville, setVille] = useState<string>("Douala");
   const [quartier, setQuartier] = useState<string>("");
-  const [remarques, setRemarques] = useState<string>("");
   const [enCoursEnvoi, setEnCoursEnvoi] = useState<boolean>(false);
+  const [commandeReussie, setCommandeReussie] = useState<boolean>(false);
+  const [erreurCommande, setErreurCommande] = useState<string>("");
+  const [codeCommandeFinal, setCodeCommandeFinal] = useState<string>("");
 
   // Calculs financiers dynamiques
   const prixAuKg = preparation === "vivant" ? reglages.prixVivant : reglages.prixNettoye;
@@ -41,16 +46,10 @@ export const CommandeSilureCarte: React.FC = () => {
 
   const soumettreCommande = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!nomClient.trim() || !telephone.trim() || !quartier.trim()) {
-      alert(langue === "fr" ? "Veuillez remplir tous les champs obligatoires." : "Please fill in all required fields.");
-      return;
-    }
-
     setEnCoursEnvoi(true);
+    setErreurCommande("");
 
     try {
-      // 1. Enregistrement dans Supabase
       const nouvelleCommande = await ajouterCommande({
         codeCommande: "",
         nomClient,
@@ -61,28 +60,26 @@ export const CommandeSilureCarte: React.FC = () => {
         prixTotal,
         ville,
         quartier,
-        remarques,
+        remarques: "",
       });
 
-      const codeGenere = nouvelleCommande ? nouvelleCommande.codeCommande : `CMD-${Date.now().toString().slice(-4)}`;
+      if (!nouvelleCommande) {
+        setErreurCommande("Impossible d'enregistrer la commande. Veuillez vérifier votre connexion ou réessayer plus tard.");
+        return;
+      }
 
-      // 2. Génération du lien WhatsApp et redirection
-      const urlWhatsApp = genererLienWhatsAppCommande({
-        telephoneBrut: reglages.telephoneBrut,
-        codeCommande: codeGenere,
-        nomClient,
-        telephoneClient: telephone,
-        preparation,
-        poidsKg,
-        prixTotal,
-        ville,
-        quartier,
-        remarques,
-        langueClient: langue,
-      });
-
-      window.open(urlWhatsApp, "_blank");
+      setCodeCommandeFinal(nouvelleCommande.codeCommande);
+      setCommandeReussie(true);
+      
+      setTimeout(() => {
+        setCommandeReussie(false);
+        setNomClient("");
+        setTelephone("");
+        setPoidsKg(3);
+        setQuartier("");
+      }, 6000);
     } catch (err) {
+      setErreurCommande("Une erreur est survenue.");
       console.error("Erreur lors de la commande :", err);
     } finally {
       setEnCoursEnvoi(false);
@@ -90,188 +87,105 @@ export const CommandeSilureCarte: React.FC = () => {
   };
 
   return (
-    <Carte surbrillance className="border-cyan-500/30 overflow-hidden">
-      {/* En-tête de la carte */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3.5 mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-[#00d2ff]">
-            <Fish className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white transition-colors duration-300">{t.titreCommande}</h2>
-            <p className="text-[11px] text-slate-400 font-medium">{t.badgeLivraison}</p>
-          </div>
-        </div>
-
-        {/* Indicateur de disponibilité */}
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          En stock
-        </span>
-      </div>
-
-      <form onSubmit={soumettreCommande} className="space-y-4">
-        {/* 1. Choix du type de préparation (Vivant vs Nettoyé) */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-2">
-            1. {langue === "fr" ? "Type de préparation" : "Preparation type"}
-          </label>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => setPreparation("vivant")}
-              className={`p-3 rounded-2xl border text-left transition-all relative ${
-                preparation === "vivant"
-                  ? "border-[#00d2ff] bg-cyan-950/40 text-white shadow-[0_0_15px_rgba(0,210,255,0.15)]"
-                  : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-              }`}
-            >
-              {preparation === "vivant" && (
-                <div className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-[#00d2ff] text-slate-950 flex items-center justify-center">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </div>
-              )}
-              <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#00d2ff]">
-                {t.etiquetteVivant}
-              </div>
-              <div className="text-sm font-bold text-slate-700 dark:text-white mt-0.5 transition-colors duration-300">{t.poissonVivant}</div>
-              <div className="text-xs font-bold text-slate-300 mt-1">
-                {reglages.prixVivant.toLocaleString("fr-FR")} FCFA <span className="text-[10px] font-normal text-slate-400">/ Kg</span>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPreparation("nettoye")}
-              className={`p-3 rounded-2xl border text-left transition-all relative ${
-                preparation === "nettoye"
-                  ? "border-[#00d2ff] bg-cyan-950/40 text-white shadow-[0_0_15px_rgba(0,210,255,0.15)]"
-                  : "border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700"
-              }`}
-            >
-              {preparation === "nettoye" && (
-                <div className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-[#00d2ff] text-slate-950 flex items-center justify-center">
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </div>
-              )}
-              <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#00d2ff]">
-                {t.etiquetteNettoye}
-              </div>
-              <div className="text-sm font-bold text-slate-700 dark:text-white mt-0.5 transition-colors duration-300">{t.poissonNettoye}</div>
-              <div className="text-xs font-bold text-slate-300 mt-1">
-                {reglages.prixNettoye.toLocaleString("fr-FR")} FCFA <span className="text-[10px] font-normal text-slate-400">/ Kg</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* 2. Ajusteur de quantité tactile */}
-        <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-3.5 space-y-3">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-slate-300">2. {t.libelleQuantite}</span>
-            <div className="flex items-center gap-1 text-[11px] text-[#00d2ff] bg-cyan-950/70 border border-cyan-500/30 px-2 py-0.5 rounded-full font-bold">
-              <Users className="w-3 h-3" />
-              <span>≈ {portionsMin} à {portionsMax} pers.</span>
+    <div className="relative">
+      <div className="absolute -inset-0.5 bg-gradient-to-br from-[#00d2ff]/20 to-[#3a7bd5]/20 blur-xl opacity-50 rounded-[2rem] -z-10"></div>
+      <Carte className="border-slate-800 bg-slate-950/60 backdrop-blur-2xl shadow-2xl p-6 relative overflow-hidden">
+        {/* En-tête de la carte */}
+        <div className="flex items-center justify-between border-b border-slate-800/50 pb-4 mb-3">
+          <div className="flex items-center gap-3">
+            {/* <div className="w-12 h-12 rounded-2xl bg-[#00d2ff]/10 border border-[#00d2ff]/30 flex items-center justify-center text-[#00d2ff]">
+              <Fish className="w-6 h-6" />
+            </div> */}
+            <div>
+              <h2 className="text-lg font-black text-white">{t.titreCommande}</h2>
+              {/* <p className="text-xs text-[#00d2ff] font-medium tracking-wide uppercase">{t.badgeLivraison}</p> */}
             </div>
           </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))}
-              className="w-11 h-11 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-
-            <div className="text-center">
-              <span className="text-2xl font-black text-slate-900 dark:text-white transition-colors duration-300">{poidsKg}</span>
-              <span className="text-xs font-bold text-slate-400 ml-1">Kg</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))}
-              className="w-11 h-11 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
-
-          <input
-            type="range"
-            min="1"
-            max="20"
-            step="0.5"
-            value={poidsKg}
-            onChange={(e) => setPoidsKg(parseFloat(e.target.value))}
-            className="w-full accent-[#00d2ff] h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-          />
         </div>
 
-        {/* 3. Informations de livraison */}
-        <div className="space-y-2.5">
-          <label className="block text-xs font-semibold text-slate-300">
-            3. {langue === "fr" ? "Coordonnées de livraison" : "Delivery details"}
-          </label>
+        <form onSubmit={soumettreCommande} className="space-y-4">
+          {commandeReussie && (
+            <div className="p-3 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-bold flex items-start gap-3">
+              <Check className="w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <p>Commande {codeCommandeFinal} confirmée !</p>
+                <p className="text-xs text-green-500/80 mt-1 font-medium">Nous vous contacterons très vite pour la livraison.</p>
+              </div>
+            </div>
+          )}
 
-          <input
-            type="text"
-            required
-            placeholder={t.libelleNomClient}
-            value={nomClient}
-            onChange={(e) => setNomClient(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
-          />
+            {erreurCommande && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {erreurCommande}
+              </div>
+            )}
 
-          <input
-            type="tel"
-            required
-            placeholder={t.libelleTelephoneClient}
-            value={telephone}
-            onChange={(e) => setTelephone(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
-          />
+            {/* 1. Quantité et Préparation (Compact) */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-slate-300">Préparation</label>
+                <div className="flex bg-slate-950 rounded-xl border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setPreparation("vivant")}
+                    className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${preparation === "vivant" ? "bg-[#00d2ff] text-slate-950 shadow-md" : "text-slate-400 hover:text-white"}`}
+                  >
+                    Vivant
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreparation("nettoye")}
+                    className={`px-2 py-1.5 rounded-xl text-xs font-bold transition-all ${preparation === "nettoye" ? "bg-[#00d2ff] text-slate-950 shadow-md" : "text-slate-400 hover:text-white"}`}
+                  >
+                    Nettoyé
+                  </button>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <select
-              value={ville}
-              onChange={(e) => setVille(e.target.value)}
-              className="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#00d2ff] transition-all duration-300"
-            >
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
+                <label className="text-sm font-bold text-slate-300">Quantité (kg)</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))} className="w-6 h-6 rounded-lg bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"><Minus className="w-4 h-4" /></button>
+                  <span className="text-xl font-black text-white w-10 text-center">{poidsKg}</span>
+                  <button type="button" onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))} className="w-6 h-6 rounded-lg bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"><Plus className="w-4 h-4" /></button>
+                </div>
+              </div>
+            </div>
+
+
+
+        {/* 2. Informations de livraison */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-4 h-4 text-[#00d2ff]" />
+            <span className="text-sm font-bold text-slate-300">Livraison</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <input type="text" required placeholder={t.libelleNomClient} value={nomClient} onChange={(e) => setNomClient(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-[#00d2ff] outline-none transition-all" />
+            <input type="tel" required placeholder={t.libelleTelephoneClient} value={telephone} onChange={(e) => setTelephone(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-[#00d2ff] outline-none transition-all" />
+          </div>
+
+          <div className="grid grid-cols-[100px_1fr] gap-3">
+            <select value={ville} onChange={(e) => setVille(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:border-[#00d2ff] outline-none transition-all">
               <option value="Douala">Douala</option>
               <option value="Yaoundé">Yaoundé</option>
             </select>
-
-            <input
-              type="text"
-              required
-              placeholder={t.espaceReserveQuartier}
-              value={quartier}
-              onChange={(e) => setQuartier(e.target.value)}
-              className="bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
-            />
+            <input type="text" required placeholder={t.espaceReserveQuartier} value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-[#00d2ff] outline-none transition-all" />
           </div>
-
-          <input
-            type="text"
-            placeholder={langue === "fr" ? "Remarques (ex: découpe spécifique, heure souhaitée)" : "Special notes (e.g. cutting size, delivery time)"}
-            value={remarques}
-            onChange={(e) => setRemarques(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-[#00d2ff] outline-none transition-all duration-300"
-          />
         </div>
 
         {/* Bonus Recettes Offert */}
-        <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs">
-          <Sparkles className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+        {/* <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm">
+          <Sparkles className="w-5 h-5 shrink-0 text-amber-400" />
           <span className="leading-snug">{t.cadeauBonus}</span>
-        </div>
+        </div> */}
 
         {/* Total & Validation */}
-        <div className="border-t border-slate-800 pt-3">
-          <div className="flex justify-between items-baseline mb-3">
-            <span className="text-xs font-semibold text-slate-400">{t.totalEstime}</span>
+        <div className="border-t border-slate-800/50 pt-4">
+          <div className="flex justify-between items-baseline mb-4">
+            <span className="text-sm font-semibold text-slate-400">{t.totalEstime}</span>
             <span className="text-2xl font-black text-[#00d2ff]">
               {prixTotal.toLocaleString("fr-FR")} FCFA
             </span>
@@ -279,15 +193,16 @@ export const CommandeSilureCarte: React.FC = () => {
 
           <Bouton
             type="submit"
-            variante="whatsapp"
-            taille="lg"
+            variante="primaire"
+            className="w-full text-xl py-2 shadow-[0_0_20px_rgba(0,210,255,0.3)] hover:shadow-[0_0_30px_rgba(0,210,255,0.5)] transition-shadow"
             chargement={enCoursEnvoi}
           >
-            <MessageCircle className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5" />
             <span>{t.boutonCommander}</span>
           </Bouton>
         </div>
       </form>
     </Carte>
+  </div>
   );
 };

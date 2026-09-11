@@ -62,6 +62,8 @@ export const NavBar: React.FC = () => {
   const liensAdmin = [
     { id: "dashboard", label: "Tableau de Bord", icone: LayoutDashboard, href: "/admin" },
     { id: "bassins", label: "Bassins & Lots", icone: Waves, href: "/admin/bassins" },
+    { id: "commandes", label: "Commandes", icone: ShoppingBag, href: "/admin/commandes" },
+    { id: "nourriture", label: "Nourrissage", icone: Utensils, href: "/admin/nourriture" },
   ];
 
   const liensAffichage = estModeAdmin ? liensAdmin : liensClient;
