@@ -25,6 +25,8 @@ export interface Bassin {
   nom: string;
   categorie: 'alevinage' | 'grossissement' | 'geniteurs';
   capaciteMaxPoissons?: number;
+  capaciteMax?: number;
+  statut?: 'actif' | 'maintenance' | 'inactif';
   creeLe?: string;
   
   // Champs calculés ou maintenus pour la rétrocompatibilité (V1)

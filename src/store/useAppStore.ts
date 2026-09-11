@@ -43,12 +43,15 @@ interface EtatApplication {
   // Bassins / Stocks 
   bassins: Bassin[];
   chargerBassins: () => Promise<void>;
+  ajouterBassin: (bassin: Omit<Bassin, "id" | "creeLe">) => Promise<Bassin | null>;
   mettreAJourBassin: (id: string, donnees: Partial<Bassin>) => Promise<boolean>;
+  supprimerBassin: (id: string) => Promise<boolean>;
 
- 
+  // Lots & Relevés
   lots: Lot[];
   relevesQualiteEau: ReleveQualiteEau[];
   relevesNourrissage: ReleveNourrissage[];
+  chargerRelevesNourrissage: () => Promise<void>;
   ajouterLot: (lot: Omit<Lot, "id" | "creeLe" | "dateArrivee" | "statut" | "quantiteActuelle">) => Promise<Lot | null>;
   ajouterReleveQualiteEau: (releve: Omit<ReleveQualiteEau, "id" | "creeLe" | "dateReleve">) => Promise<ReleveQualiteEau | null>;
   ajouterReleveNourrissage: (releve: Omit<ReleveNourrissage, "id" | "creeLe" | "dateNourrissage">) => Promise<ReleveNourrissage | null>;
@@ -332,42 +335,94 @@ export const useAppStore = create<EtatApplication>()(
 
       chargerBassins: async () => {
         try {
-          const { data, error } = await supabase
-            .from("tanks")
+          const { data: bassinsData, error: errBassins } = await supabase
+            .from("bassins")
             .select("*")
-            .order("created_at", { ascending: true });
+            .order("cree_le", { ascending: true });
+          
+          if (errBassins) throw errBassins;
 
-          if (error) throw error;
+          const { data: lotsData, error: errLots } = await supabase
+            .from("lots")
+            .select("*")
+            .eq("statut", "en_cours");
+          
+          if (errLots) throw errLots;
 
-          if (data) {
-            const listeBassins: Bassin[] = data.map((b) => ({
+          if (bassinsData) {
+            const listeBassins: Bassin[] = bassinsData.map((b) => ({
               id: b.id,
-              nom: b.name,
-              categorie: b.category,
-              nombrePoissons: b.fish_count,
-              poidsMoyenKg: Number(b.avg_weight_kg),
-              biomasseTotaleKg: Number(b.total_biomass_kg),
-              dernierNourrissage: b.last_feeding_time,
+              nom: b.nom,
+              categorie: b.categorie,
+              capaciteMaxPoissons: b.capacite_max_poissons,
+              statut: b.statut || "actif",
+              creeLe: b.cree_le
             }));
-
             set({ bassins: listeBassins });
+          }
+
+          if (lotsData) {
+            const listeLots: Lot[] = lotsData.map((l) => ({
+              id: l.id,
+              bassinId: l.bassin_id,
+              souche: l.souche,
+              dateArrivee: l.date_arrivee,
+              quantiteInitiale: l.quantite_initiale,
+              quantiteActuelle: l.quantite_actuelle,
+              poidsMoyenInitialG: l.poids_moyen_initial_g,
+              statut: l.statut,
+              creeLe: l.cree_le
+            }));
+            set({ lots: listeLots });
           }
         } catch (e) {
           console.error("Erreur chargement bassins :", e);
         }
       },
 
+      ajouterBassin: async (donnees) => {
+        try {
+          const { data, error } = await supabase
+            .from("bassins")
+            .insert({
+              nom: donnees.nom,
+              categorie: donnees.categorie,
+              capacite_max_poissons: donnees.capaciteMaxPoissons,
+              statut: donnees.statut || "actif"
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          
+          const nouveauBassin: Bassin = {
+            id: data.id,
+            nom: data.nom,
+            categorie: data.categorie as any,
+            capaciteMaxPoissons: data.capacite_max_poissons,
+            statut: data.statut as any,
+            creeLe: data.cree_le
+          };
+
+          set({ bassins: [...get().bassins, nouveauBassin] });
+          return nouveauBassin;
+        } catch (e) {
+          console.error("Erreur ajout bassin :", e);
+          return null;
+        }
+      },
+
       mettreAJourBassin: async (id, donnees) => {
         try {
+          const updateData: any = {};
+          if (donnees.nom) updateData.nom = donnees.nom;
+          if (donnees.categorie) updateData.categorie = donnees.categorie;
+          if (donnees.capaciteMaxPoissons !== undefined) updateData.capacite_max_poissons = donnees.capaciteMaxPoissons;
+          if (donnees.statut) updateData.statut = donnees.statut;
+
           const { error } = await supabase
-            .from("tanks")
-            .update({
-              name: donnees.nom,
-              fish_count: donnees.nombrePoissons,
-              avg_weight_kg: donnees.poidsMoyenKg,
-              total_biomass_kg: donnees.biomasseTotaleKg,
-              last_feeding_time: donnees.dernierNourrissage,
-            })
+            .from("bassins")
+            .update(updateData)
             .eq("id", id);
 
           if (error) throw error;
@@ -384,10 +439,54 @@ export const useAppStore = create<EtatApplication>()(
         }
       },
 
-      
+      supprimerBassin: async (id) => {
+        try {
+          const { error } = await supabase
+            .from("bassins")
+            .delete()
+            .eq("id", id);
+
+          if (error) throw error;
+
+          set({
+            bassins: get().bassins.filter((b) => b.id !== id),
+          });
+          return true;
+        } catch (e) {
+          console.error("Erreur suppression bassin :", e);
+          return false;
+        }
+      },
+
       lots: [],
       relevesQualiteEau: [],
       relevesNourrissage: [],
+
+      chargerRelevesNourrissage: async () => {
+        try {
+          const { data, error } = await supabase
+            .from("releves_nourrissage")
+            .select("*")
+            .order("date_nourrissage", { ascending: false });
+
+          if (error) throw error;
+
+          if (data) {
+            const listeReleves: ReleveNourrissage[] = data.map((r) => ({
+              id: r.id,
+              lotId: r.lot_id,
+              dateNourrissage: r.date_nourrissage,
+              typeAliment: r.type_aliment,
+              quantiteKg: Number(r.quantite_kg),
+              observations: r.observations,
+              creeLe: r.cree_le,
+            }));
+            set({ relevesNourrissage: listeReleves });
+          }
+        } catch (e) {
+          console.error("Erreur chargement relevés nourrissage :", e);
+        }
+      },
 
       ajouterLot: async (donneesLot) => {
         try {

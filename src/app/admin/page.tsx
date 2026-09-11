@@ -2,20 +2,34 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useAppStore } from "@/store/useAppStore";
-import { Shield, Lock, LogOut, ArrowLeft, Sun, Moon, Mail } from "lucide-react";
+import { Shield, Lock, LogOut, ArrowLeft, Sun, Moon, Mail, Fish, Waves, Activity } from "lucide-react";
 import { NavBar } from "@/components/client/NavBar";
+import { StatCard } from "@/components/admin/StatCard";
+import { BassinCard } from "@/components/admin/BassinCard";
+import { CommandeCard } from "@/components/admin/CommandeCard";
+import { useAppStore } from "@/store/useAppStore";
 
 export default function AdminPage() {
-  const { estAdminAuthentifie, connecterAdmin, deconnecterAdmin, verifierSessionActuelle, theme, basculerTheme, reglages } = useAppStore();
+  const { 
+    estAdminAuthentifie, connecterAdmin, deconnecterAdmin, verifierSessionActuelle, 
+    theme, basculerTheme, reglages,
+    bassins, lots, chargerBassins,
+    commandes, chargerCommandes
+  } = useAppStore();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
-    verifierSessionActuelle().then(() => setChargement(false));
-  }, [verifierSessionActuelle]);
+    verifierSessionActuelle().then(() => {
+      setChargement(false);
+      if (estAdminAuthentifie) {
+        chargerBassins();
+        chargerCommandes();
+      }
+    });
+  }, [verifierSessionActuelle, estAdminAuthentifie, chargerBassins, chargerCommandes]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,14 +96,110 @@ export default function AdminPage() {
     );
   }
 
+  const totalPoissons = lots.filter(l => l.statut === "en_cours").reduce((acc, lot) => acc + lot.quantiteActuelle, 0);
+  const bassinsActifs = bassins.filter(b => b.statut === "actif").length;
+
+  const handleActionBassin = (bassinId: string) => {
+    console.log("Action sur le bassin", bassinId);
+    // TODO: Ouvrir le modal d'ajout de lot ou de gestion
+  };
+
+  const commandesEnAttente = commandes.filter(c => c.statut === "en_attente");
+  const commandesEnLivraison = commandes.filter(c => c.statut === "en_livraison");
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-main)] pb-20 transition-colors duration-300">
       <NavBar />
-      <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl sm:text-4xl font-black text-white">Tableau de Bord</h1>
-        <p className="text-slate-400">Bienvenue dans l'espace de gestion. Le dashboard sera intégré ici à la prochaine étape.</p>
+      <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-black mb-2">Tableau de Bord</h1>
+          <p className="text-[var(--text-muted)]">Aperçu en temps réel de votre ferme aquacole.</p>
+        </div>
+
+        {/* Commandes En Attente (Vue directe) */}
+        {commandesEnAttente.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></span>
+              <h2 className="text-xl sm:text-2xl font-black text-white">Nouvelles Commandes</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {commandesEnAttente.map((cmd) => (
+                <CommandeCard key={cmd.id} commande={cmd} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Commandes En Cours de Livraison */}
+        {commandesEnLivraison.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-blue-400"></span>
+              <h2 className="text-xl sm:text-2xl font-black text-white">En cours de livraison</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {commandesEnLivraison.map((cmd) => (
+                <CommandeCard key={cmd.id} commande={cmd} />
+              ))}
+            </div>
+          </div>
+        )}
         
-        {/* Futurs composants: Stats, Lots, Bassins */}
+        {/* Ligne des Statistiques */}
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-3 md:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="snap-center min-w-[85vw] sm:min-w-[300px] md:min-w-0 flex-shrink-0">
+            <StatCard 
+              titre="Biomasse Totale (Estimation)" 
+              valeur="--- kg" 
+              Icone={Activity} 
+              description="Calculée sur base du FCR" 
+            />
+          </div>
+          <div className="snap-center min-w-[85vw] sm:min-w-[300px] md:min-w-0 flex-shrink-0">
+            <StatCard 
+              titre="Population Vivante" 
+              valeur={totalPoissons.toLocaleString("fr-FR")} 
+              Icone={Fish} 
+              description="Poissons en cours d'élevage" 
+            />
+          </div>
+          <div className="snap-center min-w-[85vw] sm:min-w-[300px] md:min-w-0 flex-shrink-0">
+            <StatCard 
+              titre="Bassins Actifs" 
+              valeur={`${bassinsActifs} / ${bassins.length}`} 
+              Icone={Waves} 
+              description="En cours d'exploitation" 
+            />
+          </div>
+        </div>
+
+        {/* Grille des Bassins */}
+        <div>
+          <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
+            <Waves className="w-6 h-6 text-[#00d2ff]" />
+            État des Bassins
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {bassins.map(bassin => {
+              const lotActif = lots.find(l => l.bassinId === bassin.id && l.statut === "en_cours");
+              return (
+                <BassinCard 
+                  key={bassin.id} 
+                  bassin={bassin} 
+                  lotActif={lotActif} 
+                  surAction={handleActionBassin} 
+                />
+              );
+            })}
+            
+            {bassins.length === 0 && (
+              <div className="col-span-full py-12 text-center bg-slate-900/50 rounded-3xl border border-slate-800/50 border-dashed">
+                <p className="text-slate-400">Aucun bassin configuré.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );
