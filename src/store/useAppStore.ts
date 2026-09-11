@@ -22,11 +22,11 @@ interface EtatApplication {
   basculerTheme: () => void;
 
   // Securite admin
-  codePinAdmin: string;
+  emailAdmin: string;
   estAdminAuthentifie: boolean;
-  verifierPin: (pin: string) => boolean;
-  deconnecterAdmin: () => void;
-  definirCodePin: (nouveauPin: string) => void;
+  connecterAdmin: (email: string, motDePasse: string) => Promise<{ success: boolean; error?: string }>;
+  deconnecterAdmin: () => Promise<void>;
+  verifierSessionActuelle: () => Promise<void>;
 
   // Reglages entreprise 
   reglages: ReglagesEntreprise;
@@ -85,16 +85,42 @@ export const useAppStore = create<EtatApplication>()(
         set({ theme: prochainTheme });
       },
 
-      
-      codePinAdmin: "2026",
+      emailAdmin: "",
       estAdminAuthentifie: false,
-      verifierPin: (pin) => {
-        const estValide = pin === get().codePinAdmin;
-        if (estValide) set({ estAdminAuthentifie: true });
-        return estValide;
+      
+      verifierSessionActuelle: async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          set({ 
+            estAdminAuthentifie: !!session,
+            emailAdmin: session?.user?.email || ""
+          });
+        } catch (e) {
+          console.error("Erreur session:", e);
+        }
       },
-      deconnecterAdmin: () => set({ estAdminAuthentifie: false }),
-      definirCodePin: (nouveauPin) => set({ codePinAdmin: nouveauPin }),
+
+      connecterAdmin: async (email, motDePasse) => {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password: motDePasse,
+          });
+
+          if (error) throw error;
+          
+          set({ estAdminAuthentifie: true, emailAdmin: data.user.email });
+          return { success: true };
+        } catch (e: any) {
+          console.error("Erreur connexion admin :", e);
+          return { success: false, error: "Identifiants incorrects." };
+        }
+      },
+
+      deconnecterAdmin: async () => {
+        await supabase.auth.signOut();
+        set({ estAdminAuthentifie: false, emailAdmin: "" });
+      },
 
       // Réglages
       reglages: REGLAGES_PAR_DEFAUT,
@@ -472,8 +498,6 @@ export const useAppStore = create<EtatApplication>()(
       partialize: (state) => ({
         langue: state.langue,
         theme: state.theme,
-        codePinAdmin: state.codePinAdmin,
-        estAdminAuthentifie: state.estAdminAuthentifie,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { TRADUCTIONS } from "@/data/contenu";
 import { LogoVideoClip } from "@/components/ui/LogoVideoClip";
@@ -16,41 +17,73 @@ import {
   Moon,
   PhoneCall,
   Compass,
+  LogOut,
+  LayoutDashboard,
+  Waves
 } from "lucide-react";
 
 export const NavBar: React.FC = () => {
-  const { langue, definirLangue, theme, basculerTheme, reglages } = useAppStore();
+  const { langue, definirLangue, theme, basculerTheme, reglages, deconnecterAdmin } = useAppStore();
   const [estOuvert, setEstOuvert] = useState<boolean>(false);
+  const [compteurTaps, setCompteurTaps] = useState(0);
+  const pathname = usePathname();
+  const router = useRouter();
   const t = TRADUCTIONS[langue];
 
-  const liensNavigation = [
+  const estModeAdmin = pathname.startsWith("/admin");
+
+  const liensClient = [
     {
       id: "a-propos",
       label: t.navigationAPropos,
       icone: Compass,
-      href: "#a-propos",
+      href: "/#a-propos",
     },
     {
       id: "commander",
       label: t.navigationBoutique,
       icone: ShoppingBag,
-      href: "#commander",
+      href: "/#commander",
     },
     {
       id: "formations",
       label: t.navigationFormations,
       icone: GraduationCap,
-      href: "#formations",
+      href: "/#formations",
     },
     {
       id: "recettes",
       label: t.navigationRecettes,
       icone: Utensils,
-      href: "#recettes",
+      href: "/#recettes",
     },
   ];
 
+  const liensAdmin = [
+    { id: "dashboard", label: "Tableau de Bord", icone: LayoutDashboard, href: "/admin" },
+    { id: "bassins", label: "Bassins & Lots", icone: Waves, href: "/admin/bassins" },
+  ];
+
+  const liensAffichage = estModeAdmin ? liensAdmin : liensClient;
+
   const fermerMenu = () => setEstOuvert(false);
+
+  // Raccourci secret (5 taps rapides) pour aller à l'admin
+  useEffect(() => {
+    if (compteurTaps >= 5) {
+      setCompteurTaps(0);
+      router.push("/admin");
+    }
+    const timer = setTimeout(() => setCompteurTaps(0), 1500);
+    return () => clearTimeout(timer);
+  }, [compteurTaps, router]);
+
+  const handleLogoTap = (e: React.MouseEvent) => {
+    // Si on est déjà sur l'admin, le clic nous ramène à l'accueil
+    if (estModeAdmin) return;
+    e.preventDefault();
+    setCompteurTaps((prev) => prev + 1);
+  };
 
   return (
     <>
@@ -59,9 +92,12 @@ export const NavBar: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
           {/* Logo d'origine */}
           <Link
-            href="/"
+            href={estModeAdmin ? "/admin" : "/"}
             className="flex items-center gap-2 group select-none"
-            onClick={fermerMenu}
+            onClick={(e) => {
+              fermerMenu();
+              handleLogoTap(e);
+            }}
           >
             <div className="w-9 h-9 bg-cyan-950/80 border border-[#00d2ff]/40 flex items-center justify-center text-[#00d2ff] shadow-[0_0_15px_rgba(0,210,255,0.2)] group-hover:scale-105 transition-transform">
               <img src="/images/logo.png" alt="" />
@@ -120,11 +156,21 @@ export const NavBar: React.FC = () => {
               {theme === "sombre" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-amber-500" />}
             </button>
 
+            {estModeAdmin ? (
+              <button
+                onClick={deconnecterAdmin}
+                className="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors text-sm font-bold border border-slate-800 hover:border-slate-700 ml-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Déconnexion</span>
+              </button>
+            ) : null}
+
             {/* Bouton d'ouverture du menu */}
             <button
               onClick={() => setEstOuvert(true)}
               aria-label="Ouvrir le menu"
-              className="w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition-colors active:scale-95"
+              className="w-9 h-9 ml-2 rounded-xl bg-slate-900/90 border border-slate-800 text-white flex items-center justify-center hover:border-[#00d2ff]/40 transition-colors active:scale-95"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -189,10 +235,10 @@ export const NavBar: React.FC = () => {
 
             {/* Liens de navigation */}
             <div className="space-y-4 my-auto py-6">
-              {liensNavigation.map((lien) => {
+              {liensAffichage.map((lien) => {
                 const Icone = lien.icone;
                 return (
-                  <a
+                  <Link
                     key={lien.id}
                     href={lien.href}
                     onClick={fermerMenu}
@@ -202,10 +248,7 @@ export const NavBar: React.FC = () => {
                       <Icone className="w-5 h-5 text-[#00d2ff] group-hover:scale-110 transition-transform" />
                       <span>{lien.label}</span>
                     </div>
-                    {/* <span className="text-xs text-slate-600 group-hover:text-[#00d2ff] group-hover:translate-x-1 transition-all">
-                      →
-                    </span> */}
-                  </a>
+                  </Link>
                 );
               })}
             </div>
@@ -225,17 +268,18 @@ export const NavBar: React.FC = () => {
                 </div>
               </a>
 
-              <Link
-                href="/admin"
-                onClick={fermerMenu}
-                className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold hover:bg-amber-500/15 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-amber-400" />
-                  <span>{t.navigationAdmin}</span>
-                </div>
-                <span className="text-[10px] uppercase font-semibold text-amber-400/80">Accès gérant →</span>
-              </Link>
+              {estModeAdmin ? (
+                <button
+                  onClick={() => {
+                    fermerMenu();
+                    deconnecterAdmin();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/20 transition mt-4"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Déconnexion</span>
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
