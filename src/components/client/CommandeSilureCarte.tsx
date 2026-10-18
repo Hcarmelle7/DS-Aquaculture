@@ -93,32 +93,32 @@ export const CommandeSilureCarte: React.FC = () => {
 
       {/* Colonne des Prix (1/4 ou 1/3) */}
       <div className="md:col-span-4 lg:col-span-3 xl:col-span-3 space-y-6">
-        <div className="bg-slate-900/80 border border-slate-800 rounded-[2rem] p-4 shadow-2xl">
+        <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-[2rem] p-4 shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-[#28a9ed]/10 flex items-center justify-center text-[#28a9ed]">
               <Fish className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-black text-white">Nos Tarifs</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">Nos Tarifs</h3>
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 relative overflow-hidden group hover:border-[#28a9ed]/50 transition-colors">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 relative overflow-hidden group hover:border-[#28a9ed]/50 transition-colors">
               <div className="absolute top-0 right-0 w-24 h-24 bg-[#28a9ed]/5 rounded-full blur-xl group-hover:bg-[#28a9ed]/10 transition-colors"></div>
-              <p className="text-sm font-bold text-slate-400 mb-1">Silure Vivant</p>
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Silure Vivant</p>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-black text-white">{reglages.prixVivant.toLocaleString("fr-FR")}</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{reglages.prixVivant.toLocaleString("fr-FR")}</p>
                 <span className="text-sm font-bold text-[#28a9ed]">FCFA / kg</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 relative overflow-hidden group hover:border-[#28a9ed]/50 transition-colors">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 relative overflow-hidden group hover:border-[#28a9ed]/50 transition-colors">
               <div className="absolute top-0 right-0 w-24 h-24 bg-[#28a9ed]/5 rounded-full blur-xl group-hover:bg-[#28a9ed]/10 transition-colors"></div>
-              <p className="text-sm font-bold text-slate-400 mb-1">Silure Nettoyé</p>
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Silure Nettoyé</p>
               <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-black text-white">{reglages.prixNettoye.toLocaleString("fr-FR")}</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{reglages.prixNettoye.toLocaleString("fr-FR")}</p>
                 <span className="text-sm font-bold text-[#28a9ed]">FCFA / kg</span>
               </div>
-              <p className="text-[11px] font-medium text-slate-500 mt-2 flex items-center gap-1.5">
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-[#28a9ed]" />
                 Prêt à cuire, sans écailles
               </p>
@@ -130,84 +130,80 @@ export const CommandeSilureCarte: React.FC = () => {
       {/* Formulaire de Commande (reste de l'espace) */}
       <div className="relative md:col-span-8 lg:col-span-9 xl:col-span-9">
         <div className="absolute -inset-0.5 bg-gradient-to-br from-[#28a9ed]/20 to-[#0f4360]/20 blur-xl opacity-50 rounded-[2rem] -z-10"></div>
-        <Carte className="border-slate-800 bg-slate-950/80 backdrop-blur-2xl shadow-2xl p-4 md:p-6 relative overflow-hidden">
+        <Carte className="border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/80 backdrop-blur-2xl shadow-xl p-4 md:p-6 relative overflow-hidden">
           {/* En-tête de la carte */}
-          <div className="flex items-center justify-between border-b border-slate-800/50 pb-2 mb-2">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50 pb-2 mb-2">
             <div className="flex items-center gap-3">
-              {/* <div className="w-12 h-12 rounded-2xl bg-[#00d2ff]/10 border border-[#00d2ff]/30 flex items-center justify-center text-[#00d2ff]">
-              <Fish className="w-6 h-6" />
-            </div> */}
               <div>
-                <h2 className="text-lg font-black text-white">{t.titreCommande}</h2>
-                {/* <p className="text-xs text-[#00d2ff] font-medium tracking-wide uppercase">{t.badgeLivraison}</p> */}
+                <h2 className="text-lg font-black text-slate-900 dark:text-white">{t.titreCommande}</h2>
               </div>
             </div>
           </div>
 
           <form onSubmit={soumettreCommande} className="space-y-4">
             {commandeReussie && (
-              <div className="p-3 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl text-sm font-bold flex items-start gap-3">
+              <div className="p-3 bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 rounded-xl text-sm font-bold flex items-start gap-3">
                 <Check className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
                   <p>{t.commandeConfirmee} (N° {codeCommandeFinal})</p>
-                  <p className="text-xs text-green-500/80 mt-1 font-medium">{t.messageLivraison}</p>
+                  <p className="text-xs text-green-600/80 dark:text-green-500/80 mt-1 font-medium">{t.messageLivraison}</p>
                 </div>
               </div>
             )}
 
             {erreurCommande && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-xs font-bold flex items-center gap-2">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 {t.commandeErreur}
               </div>
             )}
 
             {/* 1. Quantité et Préparation (Compact) */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl px-4 py-2 space-y-2">
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 rounded-2xl px-4 py-2.5 space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-300">Préparation</label>
-                <div className="flex bg-slate-950 rounded-xl border border-slate-800">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Préparation</label>
+                <div className="flex bg-slate-200/60 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 p-0.5">
                   <button
                     type="button"
                     onClick={() => setPreparation("vivant")}
-                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${preparation === "vivant" ? "bg-[#28a9ed] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${preparation === "vivant" ? "bg-[#28a9ed] text-white shadow-md" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     Vivant
                   </button>
                   <button
                     type="button"
                     onClick={() => setPreparation("nettoye")}
-                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${preparation === "nettoye" ? "bg-[#28a9ed] text-white shadow-md" : "text-slate-400 hover:text-white"}`}
+                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${preparation === "nettoye" ? "bg-[#28a9ed] text-white shadow-md" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     Nettoyé
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
-                <label className="text-sm font-bold text-slate-300">Quantité (kg)</label>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/50">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Quantité (kg)</label>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))} className="w-6 h-6 rounded-lg bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"><Minus className="w-4 h-4" /></button>
-                  <span className="text-xl font-black text-white w-10 text-center">{poidsKg}</span>
-                  <button type="button" onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))} className="w-6 h-6 rounded-lg bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 active:scale-95 transition-all"><Plus className="w-4 h-4" /></button>
+                  <button type="button" onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))} className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"><Minus className="w-4 h-4" /></button>
+                  <span className="text-xl font-black text-slate-900 dark:text-white w-10 text-center">{poidsKg}</span>
+                  <button type="button" onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))} className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"><Plus className="w-4 h-4" /></button>
                 </div>
               </div>
             </div>
 
             {/* 2. Informations de livraison */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-3 space-y-2">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+              <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-4 h-4 text-[#28a9ed]" />
-                <span className="text-sm font-bold text-slate-300">Livraison & Coordonnées</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Livraison & Coordonnées</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input type="text" required placeholder={t.libelleNomClient} value={nomClient} onChange={(e) => setNomClient(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all" />
-                <input type="tel" required placeholder={t.libelleTelephoneClient} value={telephone} onChange={(e) => setTelephone(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all" />
+                <input type="text" required placeholder={t.libelleNomClient} value={nomClient} onChange={(e) => setNomClient(e.target.value)} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm" />
+                <input type="tel" required placeholder={t.libelleTelephoneClient} value={telephone} onChange={(e) => setTelephone(e.target.value)} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm" />
               </div>
 
               <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3 pt-1">
-                <select value={ville} onChange={(e) => setVille(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:border-[#28a9ed] outline-none transition-all">
+                <select value={ville} onChange={(e) => setVille(e.target.value)} className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-[#28a9ed] outline-none transition-all shadow-sm">
                   <option value="Douala">Douala</option>
                   <option value="Yaoundé">Yaoundé</option>
                   <option value="Edea">Edea</option>
@@ -218,9 +214,8 @@ export const CommandeSilureCarte: React.FC = () => {
                   <option value="Bafoussam">Bafoussam</option>
                   <option value="Foumban">Foumban</option>
                   <option value="Foumbot">Foumbot</option>
-
                 </select>
-                <input type="text" required placeholder={t.espaceReserveQuartier} value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all" />
+                <input type="text" required placeholder={t.espaceReserveQuartier} value={quartier} onChange={(e) => setQuartier(e.target.value)} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm" />
               </div>
 
               <div>
@@ -229,21 +224,15 @@ export const CommandeSilureCarte: React.FC = () => {
                   value={remarques}
                   onChange={(e) => setRemarques(e.target.value)}
                   rows={2}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all resize-none"
+                  className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all resize-none shadow-sm"
                 />
               </div>
             </div>
 
-            {/* Bonus Recettes Offert */}
-            {/* <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm">
-          <Sparkles className="w-5 h-5 shrink-0 text-amber-400" />
-          <span className="leading-snug">{t.cadeauBonus}</span>
-        </div> */}
-
             {/* Total & Validation */}
-            <div className="">
+            <div>
               <div className="flex justify-between items-baseline mb-4">
-                <span className="text-sm font-semibold text-slate-400">{t.totalEstime}</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t.totalEstime}</span>
                 <span className="text-3xl font-black text-[#28a9ed]">
                   {prixTotal.toLocaleString("fr-FR")} <span className="text-lg">FCFA</span>
                 </span>

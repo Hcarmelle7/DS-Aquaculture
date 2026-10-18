@@ -108,33 +108,33 @@ export const CommandeCard: React.FC<CommandeCardProps> = ({ commande }) => {
         </div>
 
         {/* Détails du client */}
-        <div className="space-y-2.5 mb-5 flex gap-15">
-          <div className="flex items-start gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+          <div className="flex items-start gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
               <User className="w-4 h-4" />
             </div>
-            <div>
-              <p className="text-slate-900 dark:text-white font-bold text-sm">
+            <div className="min-w-0">
+              <p className="text-slate-900 dark:text-white font-bold text-sm truncate">
                 {commande.nomClient}
               </p>
               <a
                 href={`tel:${commande.telephone}`}
                 className="text-slate-500 dark:text-slate-400 hover:text-[#28a9ed] dark:hover:text-[#00d2ff] text-xs flex items-center gap-1 font-medium transition-colors"
               >
-                <Phone className="w-3 h-3" /> {commande.telephone}
+                <Phone className="w-3 h-3 shrink-0" /> {commande.telephone}
               </a>
             </div>
           </div>
 
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
               <MapPin className="w-4 h-4" />
             </div>
-            <div>
-              <p className="text-slate-900 dark:text-white font-semibold text-xs">
+            <div className="min-w-0">
+              <p className="text-slate-900 dark:text-white font-semibold text-xs truncate">
                 {commande.ville}
               </p>
-              <p className="text-slate-500 dark:text-slate-400 text-xs">
+              <p className="text-slate-500 dark:text-slate-400 text-xs truncate">
                 {commande.quartier}
               </p>
             </div>
