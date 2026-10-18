@@ -284,10 +284,10 @@ export const CommandeCard: React.FC<CommandeCardProps> = ({ commande }) => {
               onChange={(e) => handleStatut(e.target.value as StatutCommande)}
               className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1.5 pl-2.5 pr-7 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 focus:outline-none focus:ring-1 focus:ring-[#00d2ff] transition-all cursor-pointer disabled:opacity-50"
             >
-              <option value="en_attente">🟡 En attente</option>
-              <option value="en_livraison">🔵 En livraison</option>
-              <option value="livree">🟢 Livrée</option>
-              <option value="annulee">🔴 Annulée</option>
+              <option value="en_attente">En attente</option>
+              <option value="en_livraison">En livraison</option>
+              <option value="livree">Livrée</option>
+              <option value="annulee">Annulée</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>

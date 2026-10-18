@@ -206,7 +206,7 @@ export const ModalActionRapide: React.FC<ModalActionRapideProps> = ({
       />
 
       {/* Conteneur Bottom Sheet mobile / Modal centré desktop */}
-      <div className="relative w-full sm:max-w-xl bg-white dark:bg-[#060c1c] border-t sm:border border-slate-200 dark:border-slate-800 rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-6 sm:fade-in sm:zoom-in-95 duration-200">
+      <div className="relative w-full sm:max-w-xl bg-white dark:bg-[#060c1c] border-t sm:border border-slate-200 dark:border-slate-800 rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] sm:max-h-[85vh] min-h-0 flex flex-col animate-in slide-in-from-bottom-6 sm:fade-in sm:zoom-in-95 duration-200">
         
         {/* En-tête simple et direct */}
         <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/40 flex items-center justify-between">
@@ -281,7 +281,7 @@ export const ModalActionRapide: React.FC<ModalActionRapideProps> = ({
         </div>
 
         {/* Formulaire ergonomique */}
-        <form onSubmit={gererSoumission} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
+        <form onSubmit={gererSoumission} className="p-5 sm:p-6 space-y-5 overflow-y-auto overscroll-contain flex-1 min-h-0">
           {messageSucces && (
             <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-2xl text-sm font-bold flex items-center gap-3 animate-in fade-in">
               <Check className="w-5 h-5 shrink-0" />

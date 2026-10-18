@@ -15,6 +15,7 @@ import {
   Edit2,
   Trash2,
 } from "lucide-react";
+import { useAppStore } from "@/store/useAppStore";
 
 interface BassinCardProps {
   bassin: Bassin;
@@ -37,6 +38,9 @@ export const BassinCard: React.FC<BassinCardProps> = ({
   surEditerBassin,
   surSupprimerBassin,
 }) => {
+  const { relevesQualiteEau } = useAppStore();
+  const dernierReleveEau = relevesQualiteEau.find((r) => r.bassinId === bassin.id);
+
   const estVide = !lotActif || lotActif.statut !== "en_cours";
   const capaciteMax = bassin.capaciteMaxPoissons || 1500;
   const effectif = lotActif?.quantiteActuelle || 0;
@@ -153,7 +157,7 @@ export const BassinCard: React.FC<BassinCardProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-white dark:bg-slate-950/80 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block uppercase">
-                  Quantitté de poissons
+                  Poissons dans le bac
                 </span>
                 <span className="text-xl font-black text-slate-900 dark:text-white">
                   {effectif.toLocaleString("fr-FR")}
@@ -171,6 +175,19 @@ export const BassinCard: React.FC<BassinCardProps> = ({
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">grammes</span>
               </div>
             </div>
+
+            {/* Relevé d'eau récent */}
+            {dernierReleveEau && (
+              <div className="flex items-center justify-between text-xs py-2 px-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-bold text-[11px]">
+                  <Droplet className="w-3.5 h-3.5 text-[#00d2ff]" />
+                  Eau :
+                </span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                  {dernierReleveEau.temperatureC}°C • pH {dernierReleveEau.ph} • {dernierReleveEau.oxygeneMgl} mg/L
+                </span>
+              </div>
+            )}
 
             {/* Jauge de taux de remplissage */}
             <div>

@@ -59,6 +59,7 @@ interface EtatApplication {
   relevesQualiteEau: ReleveQualiteEau[];
   relevesNourrissage: ReleveNourrissage[];
   chargerRelevesNourrissage: () => Promise<void>;
+  chargerRelevesQualiteEau: (bassinId?: string) => Promise<void>;
   ajouterLot: (lot: Omit<Lot, "id" | "creeLe" | "dateArrivee" | "statut" | "quantiteActuelle">) => Promise<Lot | null>;
   ajouterReleveQualiteEau: (releve: Omit<ReleveQualiteEau, "id" | "creeLe" | "dateReleve">) => Promise<ReleveQualiteEau | null>;
   ajouterReleveNourrissage: (releve: Omit<ReleveNourrissage, "id" | "creeLe" | "dateNourrissage">) => Promise<ReleveNourrissage | null>;
@@ -249,6 +250,8 @@ export const useAppStore = create<EtatApplication>()(
           get().chargerBassins(),
           get().chargerCommandes(),
           get().chargerOperationsLog(),
+          get().chargerRelevesNourrissage(),
+          get().chargerRelevesQualiteEau(),
         ]);
       },
 
@@ -570,6 +573,50 @@ export const useAppStore = create<EtatApplication>()(
           }
         } catch (e) {
           console.error("Erreur chargement relevés nourrissage :", e);
+        }
+      },
+
+      chargerRelevesQualiteEau: async (bassinId?: string) => {
+        try {
+          let requete = supabase
+            .from("releves_qualite_eau")
+            .select("*")
+            .order("date_releve", { ascending: false });
+
+          if (bassinId) {
+            requete = requete.eq("bassin_id", bassinId);
+          }
+
+          const { data, error } = await requete;
+          if (error) throw error;
+
+          if (data) {
+            const listeReleves: ReleveQualiteEau[] = (data as Array<{
+              id: string;
+              bassin_id: string;
+              date_releve: string;
+              temperature_c: number;
+              ph: number;
+              oxygene_mgl: number;
+              remarques?: string | null;
+              cree_le: string;
+            }>).map((r) => ({
+              id: r.id,
+              bassinId: r.bassin_id,
+              dateReleve: r.date_releve,
+              temperatureC: Number(r.temperature_c),
+              ph: Number(r.ph),
+              oxygeneMgl: Number(r.oxygene_mgl),
+              remarques: r.remarques || undefined,
+              creeLe: r.cree_le,
+            }));
+            set({ relevesQualiteEau: listeReleves });
+          }
+        } catch (e) {
+          console.error("Erreur chargement relevés qualité eau :", e);
+          set({
+            erreurChargement: "Impossible d'actualiser les relevés de qualité d'eau.",
+          });
         }
       },
 

@@ -32,6 +32,7 @@ export default function PageBassins() {
     operationsLog,
     chargerBassins,
     chargerOperationsLog,
+    chargerRelevesQualiteEau,
     supprimerBassin,
   } = useAppStore();
 
@@ -55,7 +56,8 @@ export default function PageBassins() {
   useEffect(() => {
     chargerBassins();
     chargerOperationsLog();
-  }, [chargerBassins, chargerOperationsLog]);
+    chargerRelevesQualiteEau();
+  }, [chargerBassins, chargerOperationsLog, chargerRelevesQualiteEau]);
 
   // Calcul des statistiques globales du tableau blanc
   const bassinsEnEau = bassins.filter((b) => {

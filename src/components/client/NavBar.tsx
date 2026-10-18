@@ -19,7 +19,8 @@ import {
   Compass,
   LogOut,
   LayoutDashboard,
-  Waves
+  Waves,
+  Droplets,
 } from "lucide-react";
 
 export const NavBar: React.FC = () => {
@@ -62,8 +63,9 @@ export const NavBar: React.FC = () => {
   const liensAdmin = [
     { id: "dashboard", label: "Tableau de Bord", icone: LayoutDashboard, href: "/admin" },
     { id: "bassins", label: "Bassins & Lots", icone: Waves, href: "/admin/bassins" },
-    { id: "commandes", label: "Commandes", icone: ShoppingBag, href: "/admin/commandes" },
+    { id: "eau", label: "Qualité de l'Eau", icone: Droplets, href: "/admin/eau" },
     { id: "nourriture", label: "Nourrissage", icone: Utensils, href: "/admin/nourriture" },
+    { id: "commandes", label: "Commandes", icone: ShoppingBag, href: "/admin/commandes" },
   ];
 
   const liensAffichage = estModeAdmin ? liensAdmin : liensClient;
