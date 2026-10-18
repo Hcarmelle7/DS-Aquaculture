@@ -38,7 +38,7 @@ export const BassinCard: React.FC<BassinCardProps> = ({
   surSupprimerBassin,
 }) => {
   const estVide = !lotActif || lotActif.statut !== "en_cours";
-  const capaciteMax = bassin.capaciteMaxPoissons || bassin.capaciteMax || 1500;
+  const capaciteMax = bassin.capaciteMaxPoissons || 1500;
   const effectif = lotActif?.quantiteActuelle || 0;
   const poidsMoyen = lotActif?.poidsMoyenInitialG || 0;
   const biomasseKg = Number(((effectif * poidsMoyen) / 1000).toFixed(1));

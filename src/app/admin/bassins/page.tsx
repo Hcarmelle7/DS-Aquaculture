@@ -135,11 +135,11 @@ export default function PageBassins() {
         {/* En-tête de page & Action principale */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            {/* <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-bold text-[#28a9ed] dark:text-[#00d2ff] uppercase tracking-wider bg-[#00d2ff]/10 px-2.5 py-1 rounded-full border border-[#00d2ff]/20">
                 Tableau Blanc Numérique
               </span>
-            </div>
+            </div> */}
             <h1 className="text-3xl sm:text-4xl font-black flex items-center gap-3">
               <Waves className="w-8 h-8 text-[#00d2ff]" />
               Gestion des Bassins

@@ -483,9 +483,9 @@ export const useAppStore = create<EtatApplication>()(
           const nouveauBassin: Bassin = {
             id: data.id,
             nom: data.nom,
-            categorie: data.categorie as any,
+            categorie: data.categorie as Bassin["categorie"],
             capaciteMaxPoissons: data.capacite_max_poissons,
-            statut: data.statut as any,
+            statut: data.statut as Bassin["statut"],
             creeLe: data.cree_le
           };
 
@@ -499,7 +499,7 @@ export const useAppStore = create<EtatApplication>()(
 
       mettreAJourBassin: async (id, donnees) => {
         try {
-          const updateData: any = {};
+          const updateData: Record<string, unknown> = {};
           if (donnees.nom) updateData.nom = donnees.nom;
           if (donnees.categorie) updateData.categorie = donnees.categorie;
           if (donnees.capaciteMaxPoissons !== undefined) updateData.capacite_max_poissons = donnees.capaciteMaxPoissons;
@@ -689,19 +689,33 @@ export const useAppStore = create<EtatApplication>()(
           const { data, error } = await requete;
           if (error) throw error;
           if (data) {
-            const logs: OperationLog[] = data.map((d: any) => ({
+            const logs: OperationLog[] = (data as Array<{
+              id: string;
+              bassin_id: string;
+              lot_id?: string;
+              type_operation: OperationLog["typeOperation"];
+              quantite_avant: number;
+              quantite_apres: number;
+              quantite_delta: number;
+              poids_moyen_g?: number | null;
+              destination_bassin_id?: string | null;
+              calibre?: string | null;
+              opere_par?: string | null;
+              remarques?: string | null;
+              cree_le: string;
+            }>).map((d) => ({
               id: d.id,
               bassinId: d.bassin_id,
-              lotId: d.lot_id,
+              lotId: d.lot_id || undefined,
               typeOperation: d.type_operation,
               quantiteAvant: d.quantite_avant,
               quantiteApres: d.quantite_apres,
               quantiteDelta: d.quantite_delta,
               poidsMoyenG: Number(d.poids_moyen_g || 0),
-              destinationBassinId: d.destination_bassin_id,
-              calibre: d.calibre,
-              operePar: d.opere_par,
-              remarques: d.remarques,
+              destinationBassinId: d.destination_bassin_id || undefined,
+              calibre: d.calibre || undefined,
+              operePar: d.opere_par || undefined,
+              remarques: d.remarques || undefined,
               creeLe: d.cree_le,
             }));
             set({ operationsLog: logs });

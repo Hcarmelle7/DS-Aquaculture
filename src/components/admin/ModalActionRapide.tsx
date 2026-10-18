@@ -190,8 +190,8 @@ export const ModalActionRapide: React.FC<ModalActionRapideProps> = ({
           setMessageErreur("Erreur lors de l'enregistrement.");
         }
       }
-    } catch (err: any) {
-      setMessageErreur(err.message || "Une erreur est survenue.");
+    } catch (err: unknown) {
+      setMessageErreur(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
       setEnCours(false);
     }
