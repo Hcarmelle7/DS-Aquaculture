@@ -10,6 +10,8 @@ import {
   Lot,
   ReleveQualiteEau,
   ReleveNourrissage,
+  OperationLog,
+  TypeOperation,
 } from "@/types";
 import { REGLAGES_PAR_DEFAUT } from "@/data/contenu";
 import { supabase } from "@/lib/supabase";
@@ -40,6 +42,11 @@ interface EtatApplication {
   mettreAJourStatutCommande: (id: string, statut: StatutCommande) => Promise<boolean>;
   supprimerCommande: (id: string) => Promise<boolean>;
 
+  // Connectivité et erreurs réseau
+  erreurChargement: string | null;
+  effacerErreur: () => void;
+  reessayerChargement: () => Promise<void>;
+
   // Bassins / Stocks 
   bassins: Bassin[];
   chargerBassins: () => Promise<void>;
@@ -55,6 +62,37 @@ interface EtatApplication {
   ajouterLot: (lot: Omit<Lot, "id" | "creeLe" | "dateArrivee" | "statut" | "quantiteActuelle">) => Promise<Lot | null>;
   ajouterReleveQualiteEau: (releve: Omit<ReleveQualiteEau, "id" | "creeLe" | "dateReleve">) => Promise<ReleveQualiteEau | null>;
   ajouterReleveNourrissage: (releve: Omit<ReleveNourrissage, "id" | "creeLe" | "dateNourrissage">) => Promise<ReleveNourrissage | null>;
+
+  // Calibrages, Tris & Traçabilité (V2)
+  operationsLog: OperationLog[];
+  chargerOperationsLog: (bassinId?: string) => Promise<void>;
+  enregistrerCalibrage: (donnees: {
+    bassinId: string;
+    lotId: string;
+    typeOperation?: TypeOperation;
+    quantiteApres?: number;
+    nouveauPoidsMoyenG?: number;
+    calibre?: string;
+    operePar?: string;
+    remarques?: string;
+  }) => Promise<boolean>;
+  transfererPoissons: (donnees: {
+    sourceBassinId: string;
+    sourceLotId: string;
+    destinationBassinId: string;
+    quantite: number;
+    poidsMoyenG?: number;
+    calibre?: string;
+    operePar?: string;
+    remarques?: string;
+  }) => Promise<boolean>;
+  enregistrerMortalite: (donnees: {
+    bassinId: string;
+    lotId: string;
+    quantiteMorts: number;
+    operePar?: string;
+    remarques?: string;
+  }) => Promise<boolean>;
 }
 
 
@@ -202,6 +240,18 @@ export const useAppStore = create<EtatApplication>()(
         }
       },
 
+      // Connectivité et état d'erreur réseau
+      erreurChargement: null,
+      effacerErreur: () => set({ erreurChargement: null }),
+      reessayerChargement: async () => {
+        set({ erreurChargement: null });
+        await Promise.all([
+          get().chargerBassins(),
+          get().chargerCommandes(),
+          get().chargerOperationsLog(),
+        ]);
+      },
+
       // Commandes
       commandes: [],
 
@@ -215,6 +265,26 @@ export const useAppStore = create<EtatApplication>()(
           if (error) throw error;
 
           if (data) {
+            // Passerelle automatique de statut Supabase (anglais/SQL) vers l'application (francais)
+            const mapperStatut = (status?: string | null): StatutCommande => {
+              switch (status?.toLowerCase()) {
+                case "pending":
+                case "en_attente":
+                  return "en_attente";
+                case "in_delivery":
+                case "en_livraison":
+                  return "en_livraison";
+                case "delivered":
+                case "livree":
+                  return "livree";
+                case "cancelled":
+                case "annulee":
+                  return "annulee";
+                default:
+                  return "en_attente";
+              }
+            };
+
             const listeCommandes: CommandePoisson[] = data.map((cmd) => ({
               id: cmd.id,
               codeCommande: cmd.order_code,
@@ -227,14 +297,18 @@ export const useAppStore = create<EtatApplication>()(
               ville: cmd.location_city,
               quartier: cmd.neighborhood,
               remarques: cmd.notes,
-              statut: cmd.status,
+              statut: mapperStatut(cmd.status),
               creeLe: cmd.created_at,
             }));
 
-            set({ commandes: listeCommandes });
+            set({ commandes: listeCommandes, erreurChargement: null });
           }
         } catch (e) {
           console.error("Erreur chargement commandes :", e);
+          // Conservation des données en cache sans vider l'écran, avec alerte explicite
+          set({
+            erreurChargement: "Connexion instable : impossible d'actualiser les commandes.",
+          });
         }
       },
 
@@ -330,7 +404,7 @@ export const useAppStore = create<EtatApplication>()(
         }
       },
 
-      // Bassins
+      // Bassins & Tableau Blanc
       bassins: [],
 
       chargerBassins: async () => {
@@ -349,34 +423,45 @@ export const useAppStore = create<EtatApplication>()(
           
           if (errLots) throw errLots;
 
-          if (bassinsData) {
-            const listeBassins: Bassin[] = bassinsData.map((b) => ({
+          const listeLots: Lot[] = (lotsData || []).map((l) => ({
+            id: l.id,
+            bassinId: l.bassin_id,
+            souche: l.souche,
+            dateArrivee: l.date_arrivee,
+            quantiteInitiale: l.quantite_initiale,
+            quantiteActuelle: l.quantite_actuelle,
+            poidsMoyenInitialG: l.poids_moyen_initial_g,
+            statut: l.statut,
+            creeLe: l.cree_le,
+          }));
+
+          const listeBassins: Bassin[] = (bassinsData || []).map((b) => {
+            const lotActif = listeLots.find((l) => l.bassinId === b.id && l.statut === "en_cours");
+            const nombrePoissons = lotActif ? lotActif.quantiteActuelle : 0;
+            const poidsMoyenG = lotActif ? Number(lotActif.poidsMoyenInitialG || 0) : 0;
+            const biomasseTotaleKg = Number(((nombrePoissons * poidsMoyenG) / 1000).toFixed(2));
+
+            return {
               id: b.id,
               nom: b.nom,
               categorie: b.categorie,
               capaciteMaxPoissons: b.capacite_max_poissons,
               statut: b.statut || "actif",
-              creeLe: b.cree_le
-            }));
-            set({ bassins: listeBassins });
-          }
+              creeLe: b.cree_le,
+              lotActif,
+              nombrePoissons,
+              poidsMoyenKg: Number((poidsMoyenG / 1000).toFixed(3)),
+              biomasseTotaleKg,
+            };
+          });
 
-          if (lotsData) {
-            const listeLots: Lot[] = lotsData.map((l) => ({
-              id: l.id,
-              bassinId: l.bassin_id,
-              souche: l.souche,
-              dateArrivee: l.date_arrivee,
-              quantiteInitiale: l.quantite_initiale,
-              quantiteActuelle: l.quantite_actuelle,
-              poidsMoyenInitialG: l.poids_moyen_initial_g,
-              statut: l.statut,
-              creeLe: l.cree_le
-            }));
-            set({ lots: listeLots });
-          }
+          set({ bassins: listeBassins, lots: listeLots, erreurChargement: null });
         } catch (e) {
           console.error("Erreur chargement bassins :", e);
+          // Conservation des données en cache pour ne pas afficher un faux tableau blanc vide
+          set({
+            erreurChargement: "Connexion instable : impossible d'actualiser les bassins.",
+          });
         }
       },
 
@@ -589,6 +674,423 @@ export const useAppStore = create<EtatApplication>()(
         } catch (e) {
           console.error("Erreur ajout releve nourrissage :", e);
           return null;
+        }
+      },
+
+      // Opérations de Calibrage & Traçabilité (V2)
+      operationsLog: [],
+
+      chargerOperationsLog: async (bassinId?: string) => {
+        try {
+          let requete = supabase.from("operations_log").select("*").order("cree_le", { ascending: false });
+          if (bassinId) {
+            requete = requete.eq("bassin_id", bassinId);
+          }
+          const { data, error } = await requete;
+          if (error) throw error;
+          if (data) {
+            const logs: OperationLog[] = data.map((d: any) => ({
+              id: d.id,
+              bassinId: d.bassin_id,
+              lotId: d.lot_id,
+              typeOperation: d.type_operation,
+              quantiteAvant: d.quantite_avant,
+              quantiteApres: d.quantite_apres,
+              quantiteDelta: d.quantite_delta,
+              poidsMoyenG: Number(d.poids_moyen_g || 0),
+              destinationBassinId: d.destination_bassin_id,
+              calibre: d.calibre,
+              operePar: d.opere_par,
+              remarques: d.remarques,
+              creeLe: d.cree_le,
+            }));
+            set({ operationsLog: logs });
+          }
+        } catch (e) {
+          console.error("Erreur chargement logs opérations :", e);
+        }
+      },
+
+      enregistrerCalibrage: async ({
+        bassinId,
+        lotId,
+        typeOperation = "calibrage",
+        quantiteApres,
+        nouveauPoidsMoyenG,
+        calibre,
+        operePar = "Équipe Piscicole",
+        remarques,
+      }) => {
+        try {
+          const lotExistant = get().lots.find((l) => l.id === lotId);
+          if (!lotExistant) throw new Error("Lot introuvable");
+
+          const quantiteAvant = lotExistant.quantiteActuelle;
+          const quantiteFinale = quantiteApres !== undefined ? quantiteApres : quantiteAvant;
+          const quantiteDelta = quantiteFinale - quantiteAvant;
+          const poidsFinal = nouveauPoidsMoyenG !== undefined ? nouveauPoidsMoyenG : lotExistant.poidsMoyenInitialG;
+
+          // 1. Mise à jour de la table lots
+          const { error: errLot } = await supabase
+            .from("lots")
+            .update({
+              quantite_actuelle: quantiteFinale,
+              poids_moyen_initial_g: poidsFinal,
+            })
+            .eq("id", lotId);
+
+          if (errLot) throw errLot;
+
+          // 2. Ajout dans operations_log
+          const { data: logData, error: errLog } = await supabase
+            .from("operations_log")
+            .insert({
+              bassin_id: bassinId,
+              lot_id: lotId,
+              type_operation: typeOperation,
+              quantite_avant: quantiteAvant,
+              quantite_apres: quantiteFinale,
+              quantite_delta: quantiteDelta,
+              poids_moyen_g: poidsFinal,
+              calibre,
+              opere_par: operePar,
+              remarques,
+            })
+            .select()
+            .single();
+
+          if (errLog) console.warn("Erreur insertion log:", errLog);
+
+          const nouveauLog: OperationLog = {
+            id: logData?.id || `log-${Date.now()}`,
+            bassinId,
+            lotId,
+            typeOperation,
+            quantiteAvant,
+            quantiteApres: quantiteFinale,
+            quantiteDelta,
+            poidsMoyenG: poidsFinal,
+            calibre,
+            operePar,
+            remarques,
+            creeLe: logData?.cree_le || new Date().toISOString(),
+          };
+
+          // 3. Mise à jour synchrone de l'état Zustand
+          const lotsMaj = get().lots.map((l) =>
+            l.id === lotId
+              ? { ...l, quantiteActuelle: quantiteFinale, poidsMoyenInitialG: poidsFinal }
+              : l
+          );
+
+          const bassinsMaj = get().bassins.map((b) => {
+            if (b.id === bassinId) {
+              const lotMaj = lotsMaj.find((l) => l.id === lotId);
+              const biomasseTotaleKg = Number(((quantiteFinale * poidsFinal) / 1000).toFixed(2));
+              return {
+                ...b,
+                lotActif: lotMaj,
+                nombrePoissons: quantiteFinale,
+                poidsMoyenKg: Number((poidsFinal / 1000).toFixed(3)),
+                biomasseTotaleKg,
+              };
+            }
+            return b;
+          });
+
+          set({
+            lots: lotsMaj,
+            bassins: bassinsMaj,
+            operationsLog: [nouveauLog, ...get().operationsLog],
+          });
+
+          return true;
+        } catch (e) {
+          console.error("Erreur enregistrerCalibrage :", e);
+          return false;
+        }
+      },
+
+      transfererPoissons: async ({
+        sourceBassinId,
+        sourceLotId,
+        destinationBassinId,
+        quantite,
+        poidsMoyenG,
+        calibre,
+        operePar = "Équipe Piscicole",
+        remarques,
+      }) => {
+        try {
+          const lotSource = get().lots.find((l) => l.id === sourceLotId);
+          if (!lotSource) throw new Error("Lot source introuvable");
+          if (lotSource.quantiteActuelle < quantite) throw new Error("Quantité insuffisante dans le lot source");
+
+          const quantiteApresSource = lotSource.quantiteActuelle - quantite;
+
+          // Vérifier si le bassin de destination a déjà un lot actif
+          const lotDestExistant = get().lots.find(
+            (l) => l.bassinId === destinationBassinId && l.statut === "en_cours"
+          );
+
+          let destLotId = lotDestExistant?.id;
+          let lotsMaj = get().lots;
+          let nouveauLotCree = false;
+
+          // 1. TENTATIVE VIA PROCÉDURE RPC POSTGRESQL ATOMIQUE (SI DÉPLOYÉE DANS SUPABASE)
+          let rpcReussie = false;
+          if (typeof supabase.rpc === "function") {
+            try {
+              const { data: rpcData, error: rpcError } = await supabase.rpc(
+                "transferer_poissons_atomique",
+                {
+                  p_bassin_source_id: sourceBassinId,
+                  p_lot_source_id: sourceLotId,
+                  p_bassin_dest_id: destinationBassinId,
+                  p_quantite: quantite,
+                  p_poids_moyen_g: poidsMoyenG || lotSource.poidsMoyenInitialG,
+                  p_calibre: calibre || null,
+                  p_opere_par: operePar,
+                  p_remarques: remarques || null,
+                }
+              );
+
+              if (!rpcError && rpcData && (rpcData.success || rpcData.succes)) {
+                rpcReussie = true;
+                if (rpcData.lot_dest_id) destLotId = rpcData.lot_dest_id;
+              }
+            } catch (errRpc) {
+              console.warn("RPC non disponible ou échec, bascule sur compensation Saga :", errRpc);
+            }
+          }
+
+          // 2. PATTERN SAGA AVEC COMPENSATION (ROLLBACK) SI RPC NON UTILISÉE
+          if (!rpcReussie) {
+            // ÉTAPE A : Sécurisation destination EN PREMIER (aucun risque de perte de poisson source)
+            if (lotDestExistant) {
+              const quantiteApresDest = lotDestExistant.quantiteActuelle + quantite;
+              const { error: errDest } = await supabase
+                .from("lots")
+                .update({ quantite_actuelle: quantiteApresDest })
+                .eq("id", lotDestExistant.id);
+              if (errDest) throw new Error(`Échec destination: ${errDest.message}`);
+            } else {
+              const { data: newLotData, error: errNewLot } = await supabase
+                .from("lots")
+                .insert({
+                  bassin_id: destinationBassinId,
+                  souche: lotSource.souche,
+                  quantite_initiale: quantite,
+                  quantite_actuelle: quantite,
+                  poids_moyen_initial_g: poidsMoyenG || lotSource.poidsMoyenInitialG,
+                  statut: "en_cours",
+                })
+                .select()
+                .single();
+              if (errNewLot || !newLotData) throw new Error(`Échec création lot destination: ${errNewLot?.message}`);
+
+              destLotId = newLotData.id;
+              nouveauLotCree = true;
+            }
+
+            // ÉTAPE B : Décrémentation du lot source
+            const { error: errSource } = await supabase
+              .from("lots")
+              .update({ quantite_actuelle: quantiteApresSource })
+              .eq("id", sourceLotId);
+
+            // COMPENSATION (ROLLBACK) SI ÉCHEC SOURCE
+            if (errSource) {
+              console.error("Échec décrémentation source, exécution du ROLLBACK destination...", errSource);
+              if (nouveauLotCree && destLotId) {
+                // Supprimer le lot nouvellement créé
+                await supabase.from("lots").delete().eq("id", destLotId);
+              } else if (lotDestExistant) {
+                // Rétablir la quantité initiale du lot destinataire
+                await supabase
+                  .from("lots")
+                  .update({ quantite_actuelle: lotDestExistant.quantiteActuelle })
+                  .eq("id", lotDestExistant.id);
+              }
+              throw new Error(`Échec source (rollback destination effectué): ${errSource.message}`);
+            }
+          }
+
+          // Mise à jour de l'état local des lots
+          if (lotDestExistant) {
+            const quantiteApresDest = lotDestExistant.quantiteActuelle + quantite;
+            lotsMaj = lotsMaj.map((l) =>
+              l.id === lotDestExistant.id ? { ...l, quantiteActuelle: quantiteApresDest } : l
+            );
+          } else {
+            const nouveauLot: Lot = {
+              id: destLotId || `lot-dest-${Date.now()}`,
+              bassinId: destinationBassinId,
+              souche: lotSource.souche,
+              dateArrivee: new Date().toISOString(),
+              quantiteInitiale: quantite,
+              quantiteActuelle: quantite,
+              poidsMoyenInitialG: poidsMoyenG || lotSource.poidsMoyenInitialG,
+              statut: "en_cours",
+              creeLe: new Date().toISOString(),
+            };
+            lotsMaj = [nouveauLot, ...lotsMaj];
+          }
+
+          lotsMaj = lotsMaj.map((l) =>
+            l.id === sourceLotId ? { ...l, quantiteActuelle: quantiteApresSource } : l
+          );
+
+          // Ajout du log de traçabilité (si rpcReussie, le log a déjà été inséré côté DB)
+          let logDataId = `log-${Date.now()}`;
+          if (!rpcReussie) {
+            const { data: logData, error: errLog } = await supabase
+              .from("operations_log")
+              .insert({
+                bassin_id: sourceBassinId,
+                lot_id: sourceLotId,
+                destination_bassin_id: destinationBassinId,
+                type_operation: "transfert",
+                quantite_avant: lotSource.quantiteActuelle,
+                quantite_apres: quantiteApresSource,
+                quantite_delta: -quantite,
+                poids_moyen_g: poidsMoyenG || lotSource.poidsMoyenInitialG,
+                calibre,
+                opere_par: operePar,
+                remarques,
+              })
+              .select()
+              .single();
+
+            if (errLog) console.warn("Erreur log transfert:", errLog);
+            if (logData?.id) logDataId = logData.id;
+          }
+
+          const nouveauLog: OperationLog = {
+            id: logDataId,
+            bassinId: sourceBassinId,
+            lotId: sourceLotId,
+            destinationBassinId,
+            typeOperation: "transfert",
+            quantiteAvant: lotSource.quantiteActuelle,
+            quantiteApres: quantiteApresSource,
+            quantiteDelta: -quantite,
+            poidsMoyenG: poidsMoyenG || lotSource.poidsMoyenInitialG,
+            calibre,
+            operePar,
+            remarques,
+            creeLe: new Date().toISOString(),
+          };
+
+          // Recalcul des bassins
+          const bassinsMaj = get().bassins.map((b) => {
+            const lotActif = lotsMaj.find((l) => l.bassinId === b.id && l.statut === "en_cours");
+            const nombrePoissons = lotActif ? lotActif.quantiteActuelle : 0;
+            const poidsG = lotActif ? Number(lotActif.poidsMoyenInitialG || 0) : 0;
+            const biomasseTotaleKg = Number(((nombrePoissons * poidsG) / 1000).toFixed(2));
+            return {
+              ...b,
+              lotActif,
+              nombrePoissons,
+              poidsMoyenKg: Number((poidsG / 1000).toFixed(3)),
+              biomasseTotaleKg,
+            };
+          });
+
+          set({
+            lots: lotsMaj,
+            bassins: bassinsMaj,
+            operationsLog: [nouveauLog, ...get().operationsLog],
+          });
+
+          return true;
+        } catch (e) {
+          console.error("Erreur transfererPoissons :", e);
+          return false;
+        }
+      },
+
+      enregistrerMortalite: async ({
+        bassinId,
+        lotId,
+        quantiteMorts,
+        operePar = "Équipe Piscicole",
+        remarques,
+      }) => {
+        try {
+          const lot = get().lots.find((l) => l.id === lotId);
+          if (!lot) throw new Error("Lot introuvable");
+
+          const quantiteAvant = lot.quantiteActuelle;
+          const quantiteApres = Math.max(0, quantiteAvant - quantiteMorts);
+
+          const { error: errLot } = await supabase
+            .from("lots")
+            .update({ quantite_actuelle: quantiteApres })
+            .eq("id", lotId);
+          if (errLot) throw errLot;
+
+          const { data: logData, error: errLog } = await supabase
+            .from("operations_log")
+            .insert({
+              bassin_id: bassinId,
+              lot_id: lotId,
+              type_operation: "mortalite",
+              quantite_avant: quantiteAvant,
+              quantite_apres: quantiteApres,
+              quantite_delta: -quantiteMorts,
+              poids_moyen_g: lot.poidsMoyenInitialG,
+              opere_par: operePar,
+              remarques,
+            })
+            .select()
+            .single();
+
+          if (errLog) console.warn("Erreur log mortalité:", errLog);
+
+          const nouveauLog: OperationLog = {
+            id: logData?.id || `log-${Date.now()}`,
+            bassinId,
+            lotId,
+            typeOperation: "mortalite",
+            quantiteAvant,
+            quantiteApres,
+            quantiteDelta: -quantiteMorts,
+            poidsMoyenG: lot.poidsMoyenInitialG,
+            operePar,
+            remarques,
+            creeLe: logData?.cree_le || new Date().toISOString(),
+          };
+
+          const lotsMaj = get().lots.map((l) =>
+            l.id === lotId ? { ...l, quantiteActuelle: quantiteApres } : l
+          );
+
+          const bassinsMaj = get().bassins.map((b) => {
+            if (b.id === bassinId) {
+              const biomasseTotaleKg = Number(
+                ((quantiteApres * (lot.poidsMoyenInitialG || 0)) / 1000).toFixed(2)
+              );
+              return {
+                ...b,
+                lotActif: { ...lot, quantiteActuelle: quantiteApres },
+                nombrePoissons: quantiteApres,
+                biomasseTotaleKg,
+              };
+            }
+            return b;
+          });
+
+          set({
+            lots: lotsMaj,
+            bassins: bassinsMaj,
+            operationsLog: [nouveauLog, ...get().operationsLog],
+          });
+
+          return true;
+        } catch (e) {
+          console.error("Erreur enregistrerMortalite :", e);
+          return false;
         }
       },
     }),

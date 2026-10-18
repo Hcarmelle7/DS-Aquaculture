@@ -28,8 +28,9 @@ export interface Bassin {
   capaciteMax?: number;
   statut?: 'actif' | 'maintenance' | 'inactif';
   creeLe?: string;
-  
-  // Champs calculés ou maintenus pour la rétrocompatibilité (V1)
+
+  // Tableau Blanc numérique (calculé à partir du lot actif)
+  lotActif?: Lot;
   nombrePoissons?: number;
   poidsMoyenKg?: number;
   biomasseTotaleKg?: number;
@@ -115,3 +116,38 @@ export interface TemoignageClient {
   commentaire: string;
   creeLe: string;
 }
+
+// ==========================================
+// OPÉRATIONS DE CALIBRAGE & TRAÇABILITÉ (V2)
+// ==========================================
+
+export type TypeOperation = 'calibrage' | 'tri' | 'transfert' | 'mortalite' | 'recolte' | 'alevinage';
+
+export interface OperationLog {
+  id: string;
+  bassinId: string;
+  lotId?: string;
+  typeOperation: TypeOperation;
+  quantiteAvant: number;
+  quantiteApres: number;
+  quantiteDelta: number;
+  poidsMoyenG?: number;
+  destinationBassinId?: string;
+  calibre?: string;
+  operePar?: string;
+  remarques?: string;
+  creeLe: string;
+}
+
+export interface DonneesCalibrage {
+  bassinId: string;
+  lotId: string;
+  typeOperation: TypeOperation;
+  quantiteApres?: number;
+  quantiteTransferee?: number;
+  destinationBassinId?: string;
+  nouveauPoidsMoyenG?: number;
+  calibre?: string;
+  operePar?: string;
+  remarques?: string;
+}

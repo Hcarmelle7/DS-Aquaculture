@@ -49,11 +49,11 @@ export const FormulaireNourrissage: React.FC<FormulaireNourrissageProps> = ({ au
       {erreur && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold">{erreur}</div>}
       
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Lot / Bassin *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Lot / Bassin *</label>
         <select 
           value={lotId} 
           onChange={(e) => setLotId(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         >
           {lotsActifs.length === 0 && <option value="">Aucun lot actif trouvé</option>}
           {lotsActifs.map(lot => {
@@ -68,35 +68,35 @@ export const FormulaireNourrissage: React.FC<FormulaireNourrissageProps> = ({ au
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Type d'Aliment (Taille/Marque) *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Type d'Aliment (Taille/Marque) *</label>
         <input 
           type="text" 
           value={typeAliment} 
           onChange={(e) => setTypeAliment(e.target.value)}
           placeholder="Ex: Skretting 2mm"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Quantité (kg) *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Quantité (kg) *</label>
         <input 
           type="number" 
           step="0.1"
           value={quantiteKg} 
           onChange={(e) => setQuantiteKg(e.target.value ? Number(e.target.value) : "")}
           placeholder="Ex: 12.5"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Observations</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Observations</label>
         <textarea 
           value={observations} 
           onChange={(e) => setObservations(e.target.value)}
           placeholder="Comportement, appétit..."
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] outline-none min-h-[80px]"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none min-h-[80px] shadow-sm"
         />
       </div>
 

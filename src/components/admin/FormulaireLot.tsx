@@ -48,36 +48,36 @@ export const FormulaireLot: React.FC<FormulaireLotProps> = ({ bassinId, auTermin
       {erreur && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm font-bold">{erreur}</div>}
       
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Souche (Provenance) *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Souche (Provenance) *</label>
         <input 
           type="text" 
           value={souche} 
           onChange={(e) => setSouche(e.target.value)}
           placeholder="Ex: Clarias Gariepinus (Ferme X)"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Quantité Initiale *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Quantité Initiale *</label>
         <input 
           type="number" 
           value={quantite} 
           onChange={(e) => setQuantite(e.target.value ? Number(e.target.value) : "")}
           placeholder="Ex: 2000"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-slate-400 mb-1">Poids Moyen Initial (grammes) *</label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Poids Moyen Initial (grammes) *</label>
         <input 
           type="number" 
           step="0.1"
           value={poidsMoyen} 
           onChange={(e) => setPoidsMoyen(e.target.value ? Number(e.target.value) : "")}
           placeholder="Ex: 5"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:border-[#00d2ff] outline-none"
+          className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#00d2ff] focus:ring-1 focus:ring-[#00d2ff] outline-none shadow-sm"
         />
       </div>
 

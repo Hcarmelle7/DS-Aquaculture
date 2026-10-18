@@ -34,10 +34,10 @@ export default function PageNourriture() {
           </Bouton>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-800/50 text-slate-400 uppercase font-bold text-xs">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+              <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 uppercase font-bold text-xs border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="px-6 py-4">Date</th>
                   <th className="px-6 py-4">Bassin & Lot</th>
@@ -46,26 +46,26 @@ export default function PageNourriture() {
                   <th className="px-6 py-4">Observations</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {relevesNourrissage.map(releve => {
                   const lot = lots.find(l => l.id === releve.lotId);
                   const bassin = bassins.find(b => b.id === lot?.bassinId);
                   
                   return (
-                    <tr key={releve.id} className="hover:bg-slate-800/20 transition-colors">
-                      <td className="px-6 py-4 font-medium flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-500" />
+                    <tr key={releve.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition-colors">
+                      <td className="px-6 py-4 font-medium flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                        {/* <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500" /> */}
                         {new Date(releve.dateNourrissage).toLocaleDateString('fr-FR', {
                           day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
                         })}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-white">{bassin?.nom || '?'}</span>
-                        <span className="text-xs text-slate-500 block">{lot?.souche || '?'}</span>
+                        <span className="font-bold text-slate-900 dark:text-white">{bassin?.nom || '?'}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">{lot?.souche || '?'}</span>
                       </td>
-                      <td className="px-6 py-4 font-bold text-blue-400">{releve.typeAliment}</td>
-                      <td className="px-6 py-4 font-black text-[#00d2ff]">{releve.quantiteKg} kg</td>
-                      <td className="px-6 py-4 text-slate-400 max-w-xs truncate">{releve.observations || '-'}</td>
+                      <td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">{releve.typeAliment}</td>
+                      <td className="px-6 py-4 font-black text-[#28a9ed] dark:text-[#00d2ff]">{releve.quantiteKg} kg</td>
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400 max-w-xs truncate">{releve.observations || '-'}</td>
                     </tr>
                   );
                 })}
@@ -73,7 +73,7 @@ export default function PageNourriture() {
             </table>
           </div>
           {relevesNourrissage.length === 0 && (
-            <div className="p-12 text-center text-slate-500">
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400">
               <Utensils className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p>Aucun relevé de nourrissage enregistré.</p>
             </div>
