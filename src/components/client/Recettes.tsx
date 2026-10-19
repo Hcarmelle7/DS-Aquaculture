@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { RECETTES_CUISINE, TRADUCTIONS } from "@/data/contenu";
 import { Carte } from "@/components/ui/Carte";
+import { cn } from "@/lib/utils";
 import { Utensils, Clock, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 
 export const Recettes: React.FC = () => {
@@ -39,7 +40,12 @@ export const Recettes: React.FC = () => {
           return (
             <Carte
               key={r.id}
-              className={`p-6 transition-all duration-300 cursor-pointer select-none overflow-hidden ${estOuvert ? 'bg-white dark:bg-slate-900 shadow-2xl border-orange-200 dark:border-orange-900/50 scale-[1.02]' : 'bg-orange-50/50 dark:bg-slate-900/50 border-orange-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg'}`}
+              className={cn(
+                "p-6 transition-all duration-300 cursor-pointer select-none overflow-hidden",
+                estOuvert
+                  ? "bg-white dark:bg-slate-900 shadow-2xl border-orange-200 dark:border-orange-900/50 scale-[1.02]"
+                  : "bg-orange-50/50 dark:bg-slate-900/50 border-orange-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg"
+              )}
               onClick={() => basculerRecette(r.id)}
             >
               <div className="flex justify-between items-center gap-4">

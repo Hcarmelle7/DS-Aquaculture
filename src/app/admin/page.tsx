@@ -15,6 +15,7 @@ import {
   Waves,
   Activity,
   ShoppingBag,
+  Settings,
 } from "lucide-react";
 import { NavBar } from "@/components/client/NavBar";
 import { StatCard } from "@/components/admin/StatCard";
@@ -143,9 +144,19 @@ export default function AdminPage() {
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
         <BanniereErreurReseau />
 
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-2">Tableau de Bord</h1>
-          <p className="text-[var(--text-muted)]">Aperçu en temps réel de votre ferme aquacole.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black mb-1">Tableau de Bord</h1>
+            <p className="text-[var(--text-muted)] text-sm">Aperçu en temps réel de votre ferme aquacole.</p>
+          </div>
+
+          <Link
+            href="/admin/reglages"
+            className="self-start sm:self-auto inline-flex items-center gap-2 py-2.5 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-[#00d2ff] hover:text-[#00d2ff] transition-all shadow-sm"
+          >
+            <Settings className="w-4 h-4 text-[#00d2ff]" />
+            <span>Réglages Commerciaux</span>
+          </Link>
         </div>
 
         {/* Ligne des Statistiques (KPIs réparés et dynamiques) */}

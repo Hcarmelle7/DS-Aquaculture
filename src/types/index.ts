@@ -87,6 +87,9 @@ export interface RecetteCuisine {
   instructions: string[];
 }
 
+export type TypePromo = "prix" | "evenement" | "info";
+export type StylePromo = "ruban_incline" | "badge_minimaliste" | "banniere_classique";
+
 export interface ReglagesEntreprise {
   id: string;
   nom: string;
@@ -99,6 +102,16 @@ export interface ReglagesEntreprise {
   urlTiktok: string;
   prixVivant: number;
   prixNettoye: number;
+  texteFormation: string;
+  prixFormation: number;
+  dureeFormation: string;
+  programmeFormation: string;
+  promoActive: boolean;
+  promoTitre: string;
+  promoTexte: string;
+  promoType: TypePromo;
+  promoImageUrl?: string | null;
+  promoStyle: StylePromo;
   estEnDirect: boolean;
   titreDirect: string;
   texteBannierePromo: string;

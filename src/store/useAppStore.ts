@@ -34,6 +34,8 @@ interface EtatApplication {
   reglages: ReglagesEntreprise;
   chargerReglages: () => Promise<void>;
   mettreAJourReglages: (donnees: Partial<ReglagesEntreprise>) => Promise<boolean>;
+  televerserMediaPromo: (fichier: File) => Promise<string | null>;
+  supprimerMediaPromo: (url: string) => Promise<boolean>;
 
   // Commandes 
   commandes: CommandePoisson[];
@@ -183,23 +185,21 @@ export const useAppStore = create<EtatApplication>()(
           if (data) {
             set({
               reglages: {
-                id: data.id,
-                nom: data.name,
-                logo: data.logo_url || REGLAGES_PAR_DEFAUT.logo,
-                slogan: data.slogan,
-                sloganEn: data.slogan_en,
-                telephoneBrut: data.phone_raw,
-                telephoneAffichage: data.phone_display,
-                nomUtilisateurTiktok: data.tiktok_username,
-                urlTiktok: data.tiktok_url,
-                prixVivant: data.price_vivant,
-                prixNettoye: data.price_nettoye,
-                estEnDirect: data.is_live_active,
-                titreDirect: data.live_title,
-                texteBannierePromo: data.promo_banner_text,
-                urlImagePromo: data.promo_image_url,
-                urlPhotoProfil: data.avatar_url,
-                urlVideoHero: data.video_hero_url || REGLAGES_PAR_DEFAUT.urlVideoHero,
+                ...get().reglages,
+                id: data.id || "ds_main",
+                prixVivant: data.prix_poisson_vivant ?? data.price_vivant ?? get().reglages.prixVivant,
+                prixNettoye: data.prix_poisson_nettoye ?? data.price_nettoye ?? get().reglages.prixNettoye,
+                texteFormation: data.texte_formation ?? get().reglages.texteFormation,
+                prixFormation: data.prix_formation ?? get().reglages.prixFormation,
+                dureeFormation: data.duree_formation ?? get().reglages.dureeFormation,
+                programmeFormation: data.programme_formation ?? get().reglages.programmeFormation,
+                promoActive: data.promo_active ?? get().reglages.promoActive,
+                promoTitre: data.promo_titre ?? get().reglages.promoTitre,
+                promoTexte: data.promo_texte ?? get().reglages.promoTexte,
+                promoType: (data.promo_type as "prix" | "evenement" | "info") ?? get().reglages.promoType,
+                promoImageUrl: data.promo_image_url ?? get().reglages.promoImageUrl ?? null,
+                promoStyle: (data.promo_style as "ruban_incline" | "badge_minimaliste" | "banniere_classique") ?? get().reglages.promoStyle ?? "ruban_incline",
+                texteBannierePromo: data.promo_texte ?? data.promo_banner_text ?? get().reglages.texteBannierePromo,
               },
             });
           }
@@ -210,25 +210,26 @@ export const useAppStore = create<EtatApplication>()(
 
       mettreAJourReglages: async (donnees) => {
         try {
+          const chargeUtile: Record<string, unknown> = {
+            mis_a_jour_le: new Date().toISOString(),
+          };
+
+          if (donnees.prixVivant !== undefined) chargeUtile.prix_poisson_vivant = donnees.prixVivant;
+          if (donnees.prixNettoye !== undefined) chargeUtile.prix_poisson_nettoye = donnees.prixNettoye;
+          if (donnees.texteFormation !== undefined) chargeUtile.texte_formation = donnees.texteFormation;
+          if (donnees.prixFormation !== undefined) chargeUtile.prix_formation = donnees.prixFormation;
+          if (donnees.dureeFormation !== undefined) chargeUtile.duree_formation = donnees.dureeFormation;
+          if (donnees.programmeFormation !== undefined) chargeUtile.programme_formation = donnees.programmeFormation;
+          if (donnees.promoActive !== undefined) chargeUtile.promo_active = donnees.promoActive;
+          if (donnees.promoTitre !== undefined) chargeUtile.promo_titre = donnees.promoTitre;
+          if (donnees.promoTexte !== undefined) chargeUtile.promo_texte = donnees.promoTexte;
+          if (donnees.promoType !== undefined) chargeUtile.promo_type = donnees.promoType;
+          if (donnees.promoImageUrl !== undefined) chargeUtile.promo_image_url = donnees.promoImageUrl;
+          if (donnees.promoStyle !== undefined) chargeUtile.promo_style = donnees.promoStyle;
+
           const { error } = await supabase
             .from("business_settings")
-            .update({
-              name: donnees.nom,
-              slogan: donnees.slogan,
-              slogan_en: donnees.sloganEn,
-              phone_raw: donnees.telephoneBrut,
-              phone_display: donnees.telephoneAffichage,
-              tiktok_username: donnees.nomUtilisateurTiktok,
-              tiktok_url: donnees.urlTiktok,
-              price_vivant: donnees.prixVivant,
-              price_nettoye: donnees.prixNettoye,
-              is_live_active: donnees.estEnDirect,
-              live_title: donnees.titreDirect,
-              promo_banner_text: donnees.texteBannierePromo,
-              promo_image_url: donnees.urlImagePromo,
-              avatar_url: donnees.urlPhotoProfil,
-              updated_at: new Date().toISOString(),
-            })
+            .update(chargeUtile)
             .eq("id", "ds_main");
 
           if (error) throw error;
@@ -237,6 +238,48 @@ export const useAppStore = create<EtatApplication>()(
           return true;
         } catch (e) {
           console.error("Erreur mise à jour réglages :", e);
+          return false;
+        }
+      },
+
+      televerserMediaPromo: async (fichier: File) => {
+        try {
+          const extension = fichier.name.split(".").pop() || "png";
+          const nomFichier = `promotions/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${extension}`;
+
+          const { error: erreurUpload } = await supabase.storage
+            .from("ds-media")
+            .upload(nomFichier, fichier, {
+              cacheControl: "3600",
+              upsert: true,
+            });
+
+          if (erreurUpload) {
+            console.error("Erreur upload Supabase Storage :", erreurUpload);
+            throw erreurUpload;
+          }
+
+          const { data: urlData } = supabase.storage
+            .from("ds-media")
+            .getPublicUrl(nomFichier);
+
+          return urlData.publicUrl;
+        } catch (e) {
+          console.error("Erreur téléversement média promo :", e);
+          return null;
+        }
+      },
+
+      supprimerMediaPromo: async (url: string) => {
+        try {
+          const match = url.match(/ds-media\/(.+)$/);
+          const chemin = match ? match[1] : null;
+          if (chemin) {
+            await supabase.storage.from("ds-media").remove([chemin]);
+          }
+          return true;
+        } catch (e) {
+          console.warn("Erreur suppression média promo :", e);
           return false;
         }
       },

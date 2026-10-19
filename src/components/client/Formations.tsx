@@ -41,63 +41,73 @@ export const Formations: React.FC = () => {
 
       {/* Liste des cartes de formation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {formations.map((f) => (
-          <Carte key={f.id} className="flex flex-col h-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 overflow-hidden">
-            {/* Header Carte */}
-            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
-              <div className="flex justify-between items-start gap-4 mb-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-[#28a9ed] dark:text-cyan-400 text-xs font-bold uppercase tracking-wider">
-                  <Clock className="w-3.5 h-3.5" />
-                  {f.duree}
-                </span>
-                <div className="text-right shrink-0">
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {f.prix.toLocaleString("fr-FR")}
+        {formations.map((f) => {
+          const estPackPrincipal = f.id === "pack-master-pro";
+          const prixAffiche = estPackPrincipal && reglages.prixFormation ? reglages.prixFormation : f.prix;
+          const descAffichee = estPackPrincipal && reglages.texteFormation ? reglages.texteFormation : f.description;
+          const dureeAffichee = estPackPrincipal && reglages.dureeFormation ? reglages.dureeFormation : f.duree;
+          const pointsClesAffiches = estPackPrincipal && reglages.programmeFormation
+            ? reglages.programmeFormation.split("\n").map((l) => l.trim()).filter(Boolean)
+            : f.pointsCles;
+
+          return (
+            <Carte key={f.id} className="flex flex-col h-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 overflow-hidden">
+              {/* Header Carte */}
+              <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                <div className="flex justify-between items-start gap-4 mb-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/40 text-[#28a9ed] dark:text-cyan-400 text-xs font-bold uppercase tracking-wider">
+                    <Clock className="w-3.5 h-3.5" />
+                    {dureeAffichee}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 block -mt-1">FCFA</span>
+                  <div className="text-right shrink-0">
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      {prixAffiche.toLocaleString("fr-FR")}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 block -mt-1">FCFA</span>
+                  </div>
                 </div>
-              </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
-                {f.titre}
-              </h3>
-            </div>
-
-            {/* Corps Carte */}
-            <div className="p-6 flex-grow flex flex-col space-y-6">
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                {f.description}
-              </p>
-
-              {/* Points clés */}
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50 mt-auto">
-                <span className="text-[11px] uppercase font-black tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-3">
-                  <Award className="w-4 h-4 text-[#28a9ed]" />
-                  Au programme
-                </span>
-                <ul className="space-y-2.5">
-                  {f.pointsCles.map((pt, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-300 leading-snug font-medium"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-[#28a9ed] shrink-0 mt-0.5" />
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                  {f.titre}
+                </h3>
               </div>
 
-              <Bouton
-                variante="secondaire"
-                taille="lg"
-                className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 border-none shadow-md mt-4"
-                onClick={() => reserverFormation(f.titre, f.prix)}
-              >
-                {t.boutonReserverFormation}
-              </Bouton>
-            </div>
-          </Carte>
-        ))}
+              {/* Corps Carte */}
+              <div className="p-6 flex-grow flex flex-col space-y-6">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {descAffichee}
+                </p>
+
+                {/* Points clés */}
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50 mt-auto">
+                  <span className="text-[11px] uppercase font-black tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-3">
+                    <Award className="w-4 h-4 text-[#28a9ed]" />
+                    Au programme
+                  </span>
+                  <ul className="space-y-2.5">
+                    {pointsClesAffiches.map((pt, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-300 leading-snug font-medium"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-[#28a9ed] shrink-0 mt-0.5" />
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Bouton
+                  variante="secondaire"
+                  taille="lg"
+                  className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 border-none shadow-md mt-4"
+                  onClick={() => reserverFormation(f.titre, prixAffiche)}
+                >
+                  {t.boutonReserverFormation}
+                </Bouton>
+              </div>
+            </Carte>
+          );
+        })}
       </div>
     </section>
   );

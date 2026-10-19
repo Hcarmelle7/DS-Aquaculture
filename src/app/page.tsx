@@ -11,6 +11,7 @@ import { Footer } from "@/components/client/Footer";
 
 import { NavBar } from "@/components/client/NavBar";
 import { APropos } from "@/components/client/APropos";
+import { BannierePromoHero } from "@/components/client/BannierePromoHero";
 import { Fish, Waves } from "lucide-react";
 
 export default function PageVitrine() {
@@ -35,7 +36,7 @@ export default function PageVitrine() {
 
       <main className="w-full">
         {/* Hero Section */}
-        <section className="relative w-full bg-[#28a9ed] pt-23 pb-32 overflow-hidden flex flex-col items-center text-center px-4">
+        <section className="relative w-full bg-[#28a9ed] pt-14 pb-32 overflow-hidden flex flex-col items-center text-center px-4">
           {/* Animation en arrière-plan */}
           <div className="absolute top-10 left-10 opacity-20 animate-swim"><Fish className="w-16 h-16 text-white" /></div>
           <div className="absolute top-20 right-20 opacity-20 animate-swim-diag"><Fish className="w-12 h-12 text-white" /></div>
@@ -43,7 +44,10 @@ export default function PageVitrine() {
           <div className="absolute top-[40%] right-[30%] opacity-15 animate-swim" style={{ animationDelay: '3s' }}><Fish className="w-10 h-10 text-white" /></div>
           <div className="absolute bottom-20 left-[10%] opacity-20 animate-swim-diag" style={{ animationDelay: '6s' }}><Fish className="w-14 h-14 text-white" /></div>
           
-          <div className="z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-4xl ">
+            {/* Bannière Promotionnelle Dynamique Hero (Priorité Image Canva ou Template CSS) */}
+            <BannierePromoHero />
+
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-lg mb-6">
               ÉLEVER AVEC SOIN, <br className="hidden sm:block" /> DISTRIBUER AVEC PASSION
             </h1>

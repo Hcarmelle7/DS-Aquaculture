@@ -21,6 +21,8 @@ import {
   LayoutDashboard,
   Waves,
   Droplets,
+  Settings,
+  Sparkles,
 } from "lucide-react";
 
 export const NavBar: React.FC = () => {
@@ -66,6 +68,7 @@ export const NavBar: React.FC = () => {
     { id: "eau", label: "Qualité de l'Eau", icone: Droplets, href: "/admin/eau" },
     { id: "nourriture", label: "Nourrissage", icone: Utensils, href: "/admin/nourriture" },
     { id: "commandes", label: "Commandes", icone: ShoppingBag, href: "/admin/commandes" },
+    { id: "reglages", label: "Réglages", icone: Settings, href: "/admin/reglages" },
   ];
 
   const liensAffichage = estModeAdmin ? liensAdmin : liensClient;
