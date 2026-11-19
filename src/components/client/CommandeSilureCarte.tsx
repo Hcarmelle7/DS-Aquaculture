@@ -244,7 +244,7 @@ export const CommandeSilureCarte: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setPoidsSaisi(String(Math.min(9999, +((poidsKg || 0) + 0.5).toFixed(2))))}
-                    className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100  active:scale-95 transition-all shadow-sm"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
