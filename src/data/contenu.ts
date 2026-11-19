@@ -9,7 +9,7 @@ export const REGLAGES_PAR_DEFAUT: ReglagesEntreprise = {
   logo: "/images/logo-symbole.png",
   slogan: "ÉLEVER AVEC SOIN, DISTRIBUER AVEC PASSION",
   sloganEn: "RAISED WITH CARE, DISTRIBUTED WITH PASSION",
-  telephoneBrut: "237691165192",
+  telephoneBrut: "237690687339",
   telephoneAffichage: "+237 691 16 51 92",
   nomUtilisateurTiktok: "@dsste2",
   urlTiktok: "https://www.tiktok.com/@dsste2",

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { TRADUCTIONS, REGLAGES_PAR_DEFAUT } from "@/data/contenu";
 import { genererLienWhatsAppCommande } from "@/lib/whatsapp";
+import { validerTelephoneClient } from "@/lib/telephone";
 import { Carte } from "@/components/ui/Carte";
 import { Bouton } from "@/components/ui/Bouton";
 import { PreparationPoisson } from "@/types";
@@ -29,6 +30,7 @@ export const CommandeSilureCarte: React.FC = () => {
   const [poidsSaisi, setPoidsSaisi] = useState<string>("3");
   const [nomClient, setNomClient] = useState<string>("");
   const [telephone, setTelephone] = useState<string>("");
+  const [erreurTelephone, setErreurTelephone] = useState<string>("");
   const [ville, setVille] = useState<string>("Douala");
   const [quartier, setQuartier] = useState<string>("");
   const [enCoursEnvoi, setEnCoursEnvoi] = useState<boolean>(false);
@@ -56,6 +58,13 @@ export const CommandeSilureCarte: React.FC = () => {
   const soumettreCommande = async (e: React.FormEvent) => {
     e.preventDefault();
     if (enCoursEnvoi) return;
+
+    const validationTel = validerTelephoneClient(telephone, langue);
+    if (!validationTel.valide) {
+      setErreurTelephone(validationTel.erreur || "");
+      return;
+    }
+    setErreurTelephone("");
 
     const poidsFinal = poidsKg > 0 ? poidsKg : 1;
     const prixTotalFinal = Math.round(poidsFinal * prixAuKg);
@@ -259,9 +268,38 @@ export const CommandeSilureCarte: React.FC = () => {
                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Livraison & Coordonnées</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
                 <input type="text" required placeholder={t.libelleNomClient} value={nomClient} onChange={(e) => setNomClient(e.target.value)} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm" />
-                <input type="tel" required placeholder={t.libelleTelephoneClient} value={telephone} onChange={(e) => setTelephone(e.target.value)} className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm" />
+                <div>
+                  <input
+                    type="tel"
+                    required
+                    aria-invalid={!!erreurTelephone}
+                    placeholder={t.libelleTelephoneClient}
+                    value={telephone}
+                    onChange={(e) => {
+                      const nouvelleValeur = e.target.value;
+                      setTelephone(nouvelleValeur);
+                      if (erreurTelephone) {
+                        const res = validerTelephoneClient(nouvelleValeur, langue);
+                        setErreurTelephone(res.valide ? "" : res.erreur || "");
+                      }
+                    }}
+                    onBlur={() => {
+                      if (telephone.trim()) {
+                        const res = validerTelephoneClient(telephone, langue);
+                        setErreurTelephone(res.valide ? "" : res.erreur || "");
+                      }
+                    }}
+                    className={`w-full bg-white dark:bg-slate-950 border ${erreurTelephone ? "border-red-500 dark:border-red-500" : "border-slate-200 dark:border-slate-800"} rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#28a9ed] outline-none transition-all shadow-sm`}
+                  />
+                  {erreurTelephone && (
+                    <p role="alert" className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400 flex items-start gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                      <span>{erreurTelephone}</span>
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-[110px_1fr] sm:grid-cols-[130px_1fr] gap-3 pt-1">
