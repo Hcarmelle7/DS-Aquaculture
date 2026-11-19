@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
-import { TemoignageClient } from "@/types";
+import { TemoignageClient } from "@/models";
 import { TRADUCTIONS } from "@/data/contenu";
+import { creerTemoignage, listerTemoignages } from "@/repositories/temoignage.repository";
 import { Star, MessageSquarePlus, CheckCircle2, User, Quote } from "lucide-react";
 
 export const SectionTemoignages: React.FC = () => {
@@ -22,22 +22,11 @@ export const SectionTemoignages: React.FC = () => {
   const [commentaire, setCommentaire] = useState("");
 
   const chargerAvis = async () => {
-    const { data } = await supabase
-      .from("customer_reviews")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (data) {
-      setAvis(
-        data.map((d) => ({
-          id: d.id,
-          nomAuteur: d.author_name,
-          ville: d.city,
-          note: d.rating,
-          commentaire: d.comment,
-          creeLe: d.created_at,
-        }))
-      );
+    try {
+      const liste = await listerTemoignages();
+      setAvis(liste);
+    } catch (err) {
+      console.error("Erreur chargement témoignages :", err);
     }
   };
 
@@ -50,14 +39,14 @@ export const SectionTemoignages: React.FC = () => {
     if (!nom.trim() || !commentaire.trim()) return;
 
     setChargement(true);
-    const { error } = await supabase.from("customer_reviews").insert({
-      author_name: nom,
-      city: ville,
-      rating: note,
-      comment: commentaire,
+    const reussi = await creerTemoignage({
+      nomAuteur: nom,
+      ville,
+      note,
+      commentaire,
     });
 
-    if (!error) {
+    if (reussi) {
       setSucces(true);
       setNom("");
       setCommentaire("");

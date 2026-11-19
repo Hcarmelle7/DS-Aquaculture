@@ -1,6 +1,6 @@
-import { PreparationPoisson, Langue } from "@/types";
+import { PreparationPoisson, Langue } from "@/models";
 
-interface ParametresCommandeWhatsApp {
+export interface ParametresCommandeWhatsApp {
   telephoneBrut: string;
   codeCommande: string;
   nomClient: string;
@@ -15,7 +15,7 @@ interface ParametresCommandeWhatsApp {
 }
 
 /**
- * message pre-rempli 
+ * Génère le lien WhatsApp avec message de commande pré-rempli.
  */
 export function genererLienWhatsAppCommande(params: ParametresCommandeWhatsApp): string {
   const {
@@ -34,10 +34,10 @@ export function genererLienWhatsAppCommande(params: ParametresCommandeWhatsApp):
 
   const numeroNettoye = telephoneBrut.replace(/\D/g, "");
   const remarquesNettoyees = remarques?.trim();
-  const libellePreparation = preparation === "vivant" ? "Poisson Vivant" : "Poisson Nettoyé & Éviscéré";
+  const libellePreparation =
+    preparation === "vivant" ? "Poisson Vivant" : "Poisson Nettoyé & Éviscéré";
   const indicateurLangue = langueClient === "en" ? " (Client anglophone)" : "";
 
-  // Message toujours en francais
   const message =
     `Bonjour @DS ! \n\n` +
     `Nouvelle commande de silure frais [${codeCommande}]${indicateurLangue} :\n\n` +
@@ -54,7 +54,7 @@ export function genererLienWhatsAppCommande(params: ParametresCommandeWhatsApp):
 }
 
 /**
- * URL WhatsApp pour les inscriptions aux formations
+ * Génère le lien WhatsApp pour les inscriptions aux formations.
  */
 export function genererLienWhatsAppFormation(params: {
   telephoneBrut: string;
@@ -63,6 +63,7 @@ export function genererLienWhatsAppFormation(params: {
   langueClient: Langue;
 }): string {
   const { telephoneBrut, titreFormation, prix, langueClient } = params;
+  const numeroNettoye = telephoneBrut.replace(/\D/g, "");
   const indicateurLangue = langueClient === "en" ? " (Client anglophone 🇬🇧)" : "";
 
   const message =
@@ -70,12 +71,14 @@ export function genererLienWhatsAppFormation(params: {
     `Je souhaite m'inscrire à la formation : *${titreFormation}* (${prix.toLocaleString("fr-FR")} FCFA)${indicateurLangue}.\n` +
     `Pourriez-vous me transmettre les dates de la prochaine session et les modalités pratiques d'inscription ?`;
 
-  return `https://wa.me/${telephoneBrut}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${numeroNettoye}?text=${encodeURIComponent(message)}`;
 }
 
 /**
- * lien WhatsApp general
+ * Génère un lien WhatsApp direct avec texte personnalisé.
  */
 export function genererLienWhatsAppDirect(telephoneBrut: string, texte: string): string {
-  return `https://wa.me/${telephoneBrut}?text=${encodeURIComponent(texte)}`;
+  const numeroNettoye = telephoneBrut.replace(/\D/g, "");
+  return `https://wa.me/${numeroNettoye}?text=${encodeURIComponent(texte)}`;
 }
+

@@ -2,9 +2,22 @@
 
 import React, { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { TRADUCTIONS, REGLAGES_PAR_DEFAUT } from "@/data/contenu";
-import { genererLienWhatsAppCommande } from "@/lib/whatsapp";
-import { validerTelephoneClient } from "@/lib/telephone";
+import { TRADUCTIONS } from "@/data/contenu";
+import {
+  calculerPortionsRecommandees,
+  calculerPrixAuKg,
+  calculerPrixTotalCommande,
+  orchestrerSoumissionCommande,
+} from "@/services/commande.service";
+import { validerTelephoneClient } from "@/validators/telephone.validator";
+import {
+  POIDS_PAR_DEFAUT_KG,
+  decrementerPoids,
+  estSaisiePoidsValide,
+  incrementerPoids,
+  normaliserPoidsSaisi,
+  resoudrePoidsFinal,
+} from "@/validators/commande.validator";
 import { Carte } from "@/components/ui/Carte";
 import { Bouton } from "@/components/ui/Bouton";
 import { PreparationPoisson } from "@/types";
@@ -41,19 +54,14 @@ export const CommandeSilureCarte: React.FC = () => {
   const [remarques, setRemarques] = useState<string>("");
 
   // Normalisation de la quantité (jamais de NaN)
-  const valeurPoidsParsee = parseFloat(poidsSaisi.replace(",", "."));
-  const poidsKg =
-    Number.isFinite(valeurPoidsParsee) && valeurPoidsParsee > 0
-      ? Math.min(9999, +valeurPoidsParsee.toFixed(2))
-      : 0;
+  const poidsKg = normaliserPoidsSaisi(poidsSaisi);
 
   // Calculs financiers dynamiques
-  const prixAuKg = preparation === "vivant" ? reglages.prixVivant : reglages.prixNettoye;
-  const prixTotal = Math.round(poidsKg * prixAuKg);
+  const prixAuKg = calculerPrixAuKg(preparation, reglages);
+  const prixTotal = calculerPrixTotalCommande(poidsKg, prixAuKg);
 
   // Calcul dynamique des portions recommandées
-  const portionsMin = Math.max(1, Math.floor(poidsKg * 2));
-  const portionsMax = Math.max(2, Math.ceil(poidsKg * 2.5));
+  const { min: portionsMin, max: portionsMax } = calculerPortionsRecommandees(poidsKg);
 
   const soumettreCommande = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,56 +74,32 @@ export const CommandeSilureCarte: React.FC = () => {
     }
     setErreurTelephone("");
 
-    const poidsFinal = poidsKg > 0 ? poidsKg : 1;
-    const prixTotalFinal = Math.round(poidsFinal * prixAuKg);
+    const poidsFinal = resoudrePoidsFinal(poidsKg);
     setPoidsSaisi(String(poidsFinal));
 
     setEnCoursEnvoi(true);
     setErreurCommande("");
 
-    const codeCommandeGenere = `CMD-${Math.floor(1000 + Math.random() * 9000)}`;
-    let codeCommandeEffectif = codeCommandeGenere;
-
     try {
-      const nouvelleCommande = await ajouterCommande({
-        codeCommande: codeCommandeGenere,
-        nomClient,
-        telephone,
-        preparation,
-        poidsKg: poidsFinal,
-        prixAuKg,
-        prixTotal: prixTotalFinal,
-        ville,
-        quartier,
-        remarques,
-      });
+      const { codeCommande, whatsappUrl } = await orchestrerSoumissionCommande(
+        {
+          nomClient,
+          telephone,
+          preparation,
+          poidsKg: poidsFinal,
+          prixAuKg,
+          ville,
+          quartier,
+          remarques,
+          telephoneEntreprise: reglages.telephoneBrut,
+          langue,
+        },
+        ajouterCommande
+      );
 
-      if (nouvelleCommande?.codeCommande) {
-        codeCommandeEffectif = nouvelleCommande.codeCommande;
-      } else {
-        console.warn("Enregistrement Supabase indisponible, redirection WhatsApp de secours activée.");
-      }
-    } catch (err) {
-      console.error("Erreur lors de la commande, redirection WhatsApp de secours activée :", err);
-    } finally {
-      const whatsappUrl = genererLienWhatsAppCommande({
-        telephoneBrut: reglages.telephoneBrut || REGLAGES_PAR_DEFAUT.telephoneBrut,
-        codeCommande: codeCommandeEffectif,
-        nomClient,
-        telephoneClient: telephone,
-        preparation,
-        poidsKg: poidsFinal,
-        prixTotal: prixTotalFinal,
-        ville,
-        quartier,
-        remarques,
-        langueClient: langue,
-      });
-
-      setCodeCommandeFinal(codeCommandeEffectif);
+      setCodeCommandeFinal(codeCommande);
       setLienWhatsAppFinal(whatsappUrl);
       setCommandeReussie(true);
-      setEnCoursEnvoi(false);
 
       // Redirection directe fiable sur mobile et desktop (évite le blocage popup après await)
       window.location.href = whatsappUrl;
@@ -123,10 +107,12 @@ export const CommandeSilureCarte: React.FC = () => {
       setTimeout(() => {
         setNomClient("");
         setTelephone("");
-        setPoidsSaisi("3");
+        setPoidsSaisi(String(POIDS_PAR_DEFAUT_KG));
         setQuartier("");
         setRemarques("");
       }, 6000);
+    } finally {
+      setEnCoursEnvoi(false);
     }
   };
 
@@ -227,7 +213,7 @@ export const CommandeSilureCarte: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setPoidsSaisi(String(Math.max(1, +((poidsKg || 1) - 0.5).toFixed(2))))}
+                    onClick={() => setPoidsSaisi(String(decrementerPoids(poidsKg)))}
                     className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"
                   >
                     <Minus className="w-4 h-4" />
@@ -240,19 +226,18 @@ export const CommandeSilureCarte: React.FC = () => {
                     value={poidsSaisi}
                     onChange={(e) => {
                       const val = e.target.value;
-                      if (/^\d*([.,]\d{0,2})?$/.test(val)) {
+                      if (estSaisiePoidsValide(val)) {
                         setPoidsSaisi(val);
                       }
                     }}
                     onBlur={() => {
-                      const normalise = poidsKg > 0 ? poidsKg : 1;
-                      setPoidsSaisi(String(normalise));
+                      setPoidsSaisi(String(resoudrePoidsFinal(poidsKg)));
                     }}
                     className="text-xl font-black text-slate-900 dark:text-white w-16 text-center bg-transparent border-b border-transparent focus:border-[#28a9ed] outline-none transition-colors"
                   />
                   <button
                     type="button"
-                    onClick={() => setPoidsSaisi(String(Math.min(9999, +((poidsKg || 0) + 0.5).toFixed(2))))}
+                    onClick={() => setPoidsSaisi(String(incrementerPoids(poidsKg)))}
                     className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100  active:scale-95 transition-all shadow-sm"
                   >
                     <Plus className="w-4 h-4" />

@@ -5,7 +5,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { OFFRES_FORMATIONS, TRADUCTIONS } from "@/data/contenu";
 import { Carte } from "@/components/ui/Carte";
 import { Bouton } from "@/components/ui/Bouton";
-import { genererLienWhatsAppFormation } from "@/lib/whatsapp";
+import { genererLienWhatsAppFormation } from "@/services/whatsapp.service";
 import { GraduationCap, Clock, CheckCircle2, Award } from "lucide-react";
 
 export const Formations: React.FC = () => {

@@ -5,6 +5,7 @@ import { NavBar } from "@/components/client/NavBar";
 import { useAppStore } from "@/store/useAppStore";
 import { CommandeCard } from "@/components/admin/CommandeCard";
 import { BanniereErreurReseau } from "@/components/admin/BanniereErreurReseau";
+import { calculerStatistiquesCommandes } from "@/services/commande.service";
 import { ShoppingBag, TrendingUp, DollarSign } from "lucide-react";
 
 export default function PageCommandes() {
@@ -20,15 +21,7 @@ export default function PageCommandes() {
   );
 
   // Statistiques Rapides
-  const totalRevenus = commandes
-    .filter(c => c.statut === "livree")
-    .reduce((acc, c) => acc + c.prixTotal, 0);
-
-  const totalKilos = commandes
-    .filter(c => c.statut === "livree")
-    .reduce((acc, c) => acc + c.poidsKg, 0);
-
-  const commandesEnAttente = commandes.filter(c => c.statut === "en_attente").length;
+  const { totalRevenus, totalKilos, commandesEnAttente } = calculerStatistiquesCommandes(commandes);
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-main)] pb-20 transition-colors duration-300">

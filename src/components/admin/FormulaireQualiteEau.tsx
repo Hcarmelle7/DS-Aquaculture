@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { Bouton } from "@/components/ui/Bouton";
 import { Droplet, Thermometer, Activity, Wind, AlertCircle, CheckCircle2 } from "lucide-react";
-import { evaluerTemperature, evaluerPh, evaluerOxygene } from "@/lib/qualiteEau";
+import { evaluerTemperature, evaluerPh, evaluerOxygene } from "@/services/qualiteEau.service";
 
 interface FormulaireQualiteEauProps {
   bassinIdParDefaut?: string;

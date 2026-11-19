@@ -19,7 +19,7 @@ import {
 import { ModalGenerique } from "@/components/admin/ModalGenerique";
 import { FormulaireQualiteEau } from "@/components/admin/FormulaireQualiteEau";
 import { BanniereErreurReseau } from "@/components/admin/BanniereErreurReseau";
-import { diagnostiquerQualiteEau } from "@/lib/qualiteEau";
+import { diagnostiquerQualiteEau } from "@/services/qualiteEau.service";
 import { Bassin, ReleveQualiteEau } from "@/types";
 
 export default function PageQualiteEau() {

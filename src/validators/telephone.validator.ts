@@ -1,4 +1,4 @@
-import { Langue } from "@/types";
+import { Langue } from "@/models";
 
 export interface ResultatValidationTelephone {
   valide: boolean;
@@ -99,7 +99,6 @@ export function validerTelephoneClient(
 
   // 2. Format international avec indicatif pays (+ ou 00)
   if (estInternational) {
-    // Vérification fine pour les pays africains (indicatifs 3 chiffres connus)
     const indicatif3 = chiffres.slice(0, 3);
     const reglePays = REGLES_PAYS_AFRIQUE[indicatif3];
     if (reglePays) {
