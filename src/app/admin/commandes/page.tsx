@@ -1,123 +1,135 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { NavBar } from "@/components/client/NavBar";
-import { useAppStore } from "@/store/useAppStore";
-import { CommandeCard } from "@/components/admin/CommandeCard";
-import { BanniereErreurReseau } from "@/components/admin/BanniereErreurReseau";
-import { calculerStatistiquesCommandes } from "@/services/commande.service";
 import { ShoppingBag, TrendingUp, DollarSign } from "lucide-react";
+import { useAppStore } from "@/store/useAppStore";
+import { AdminPageLayout } from "@/components/admin/AdminPageLayout";
+import { CommandeCard } from "@/components/admin/CommandeCard";
+import { BarreFiltres, OptionFiltre } from "@/components/ui/BarreFiltres";
+import { EtatVide } from "@/components/ui/EtatVide";
+import { calculerStatistiquesCommandes } from "@/services/commande.service";
+
+type FiltreStatutCommande = "toutes" | "en_attente" | "en_livraison" | "livree" | "annulee";
 
 export default function PageCommandes() {
   const { commandes, chargerCommandes } = useAppStore();
-  const [filtreStatut, setFiltreStatut] = useState<"toutes" | "en_attente" | "en_livraison" | "livree" | "annulee">("toutes");
+  const [filtreStatut, setFiltreStatut] = useState<FiltreStatutCommande>("toutes");
 
   useEffect(() => {
     chargerCommandes();
   }, [chargerCommandes]);
 
-  const commandesFiltrees = commandes.filter((c) => 
+  const commandesFiltrees = commandes.filter((c) =>
     filtreStatut === "toutes" ? true : c.statut === filtreStatut
   );
 
-  // Statistiques Rapides
-  const { totalRevenus, totalKilos, commandesEnAttente } = calculerStatistiquesCommandes(commandes);
+  const { totalRevenus, totalKilos, commandesEnAttente } =
+    calculerStatistiquesCommandes(commandes);
+
+  const optionsFiltres: OptionFiltre<FiltreStatutCommande>[] = [
+    {
+      valeur: "toutes",
+      libelle: "Toutes",
+      classeActif: "bg-[#00d2ff] text-slate-950 font-black shadow-sm",
+    },
+    {
+      valeur: "en_attente",
+      libelle: `En attente (${commandes.filter((c) => c.statut === "en_attente").length})`,
+      classeActif: "bg-yellow-500 text-slate-950 font-black shadow-sm",
+    },
+    {
+      valeur: "en_livraison",
+      libelle: `En livraison (${commandes.filter((c) => c.statut === "en_livraison").length})`,
+      classeActif: "bg-blue-500 text-white font-black shadow-sm",
+    },
+    {
+      valeur: "livree",
+      libelle: `Livrées (${commandes.filter((c) => c.statut === "livree").length})`,
+      classeActif: "bg-emerald-500 text-white font-black shadow-sm",
+    },
+    {
+      valeur: "annulee",
+      libelle: `Annulées (${commandes.filter((c) => c.statut === "annulee").length})`,
+      classeActif: "bg-red-500 text-white font-black shadow-sm",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-main)] pb-20 transition-colors duration-300">
-      <NavBar />
-      <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-        <BanniereErreurReseau />
-
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-2 flex items-center gap-3">
-            <ShoppingBag className="w-8 h-8 text-[#00d2ff]" />
-            Commandes & Ventes
-          </h1>
-          <p className="text-[var(--text-muted)]">Gérez les commandes des clients et suivez vos statistiques de vente.</p>
-        </div>
-
-        {/* Stats Rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
-              <ShoppingBag className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">À traiter</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">{commandesEnAttente}</p>
-            </div>
+    <AdminPageLayout
+      titre="Commandes & Ventes"
+      sousTitre="Gérez les commandes des clients et suivez vos statistiques de vente."
+      Icone={ShoppingBag}
+      paddingBottomClass="pb-20"
+      titreClassName="mb-2"
+      sousTitreClassName="mt-0 text-base"
+    >
+      {/* Stats Rapides */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
+            <ShoppingBag className="w-6 h-6" />
           </div>
-          
-          <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">Chiffre d'Affaires (Livré)</p>
-              <p className="text-2xl font-black text-[#28a9ed] dark:text-[#00d2ff]">{totalRevenus.toLocaleString("fr-FR")} FCFA</p>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 border border-blue-500/20">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">Volume Vendu</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">{totalKilos} kg</p>
-            </div>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">À traiter</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">
+              {commandesEnAttente}
+            </p>
           </div>
         </div>
 
-        {/* Filtres */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button 
-            onClick={() => setFiltreStatut("toutes")}
-            className={`px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${filtreStatut === "toutes" ? "bg-[#00d2ff] text-slate-950 font-black shadow-sm" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
-          >
-            Toutes
-          </button>
-          <button 
-            onClick={() => setFiltreStatut("en_attente")}
-            className={`px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${filtreStatut === "en_attente" ? "bg-yellow-500 text-slate-950 font-black shadow-sm" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
-          >
-            En attente ({commandes.filter(c => c.statut === "en_attente").length})
-          </button>
-          <button 
-            onClick={() => setFiltreStatut("en_livraison")}
-            className={`px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${filtreStatut === "en_livraison" ? "bg-blue-500 text-white font-black shadow-sm" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
-          >
-            En livraison ({commandes.filter(c => c.statut === "en_livraison").length})
-          </button>
-          <button 
-            onClick={() => setFiltreStatut("livree")}
-            className={`px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${filtreStatut === "livree" ? "bg-emerald-500 text-white font-black shadow-sm" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
-          >
-            Livrées ({commandes.filter(c => c.statut === "livree").length})
-          </button>
-          <button 
-            onClick={() => setFiltreStatut("annulee")}
-            className={`px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${filtreStatut === "annulee" ? "bg-red-500 text-white font-black shadow-sm" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
-          >
-            Annulées ({commandes.filter(c => c.statut === "annulee").length})
-          </button>
+        <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <DollarSign className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
+              Chiffre d&apos;Affaires (Livré)
+            </p>
+            <p className="text-2xl font-black text-[#28a9ed] dark:text-[#00d2ff]">
+              {totalRevenus.toLocaleString("fr-FR")} FCFA
+            </p>
+          </div>
         </div>
 
-        {/* Liste des commandes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {commandesFiltrees.map((cmd) => (
-            <CommandeCard key={cmd.id} commande={cmd} />
-          ))}
-
-          {commandesFiltrees.length === 0 && (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-800/50 border-dashed shadow-sm">
-              <ShoppingBag className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-4" />
-              <p className="text-slate-500 dark:text-slate-400 text-center max-w-md">Aucune commande trouvée pour ce statut.</p>
-            </div>
-          )}
+        <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400 border border-blue-500/20">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">Volume Vendu</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">
+              {totalKilos} kg
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Filtres */}
+      <BarreFiltres
+        options={optionsFiltres}
+        valeurActive={filtreStatut}
+        auChangement={setFiltreStatut}
+        className="pb-2 scrollbar-hide"
+        classeBouton="px-4 py-2 rounded-xl font-bold whitespace-nowrap transition-colors"
+        classeInactif="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50"
+      />
+
+      {/* Liste des commandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {commandesFiltrees.map((cmd) => (
+          <CommandeCard key={cmd.id} commande={cmd} />
+        ))}
+
+        {commandesFiltrees.length === 0 && (
+          <EtatVide
+            Icone={ShoppingBag}
+            message="Aucune commande trouvée pour ce statut."
+            variante="carteDashed"
+            className="border-slate-200 dark:border-slate-800/50 shadow-sm"
+            iconeClassName="mb-4"
+          />
+        )}
+      </div>
+    </AdminPageLayout>
   );
 }
