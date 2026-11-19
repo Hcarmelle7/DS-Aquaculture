@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { TRADUCTIONS } from "@/data/contenu";
+import { TRADUCTIONS, REGLAGES_PAR_DEFAUT } from "@/data/contenu";
 import { genererLienWhatsAppCommande } from "@/lib/whatsapp";
 import { Carte } from "@/components/ui/Carte";
 import { Bouton } from "@/components/ui/Bouton";
@@ -26,7 +26,7 @@ export const CommandeSilureCarte: React.FC = () => {
 
   // États du formulaire
   const [preparation, setPreparation] = useState<"vivant" | "nettoye">("vivant");
-  const [poidsKg, setPoidsKg] = useState<number>(3);
+  const [poidsSaisi, setPoidsSaisi] = useState<string>("3");
   const [nomClient, setNomClient] = useState<string>("");
   const [telephone, setTelephone] = useState<string>("");
   const [ville, setVille] = useState<string>("Douala");
@@ -35,7 +35,15 @@ export const CommandeSilureCarte: React.FC = () => {
   const [commandeReussie, setCommandeReussie] = useState<boolean>(false);
   const [erreurCommande, setErreurCommande] = useState<string>("");
   const [codeCommandeFinal, setCodeCommandeFinal] = useState<string>("");
+  const [lienWhatsAppFinal, setLienWhatsAppFinal] = useState<string>("");
   const [remarques, setRemarques] = useState<string>("");
+
+  // Normalisation de la quantité (jamais de NaN)
+  const valeurPoidsParsee = parseFloat(poidsSaisi.replace(",", "."));
+  const poidsKg =
+    Number.isFinite(valeurPoidsParsee) && valeurPoidsParsee > 0
+      ? Math.min(9999, +valeurPoidsParsee.toFixed(2))
+      : 0;
 
   // Calculs financiers dynamiques
   const prixAuKg = preparation === "vivant" ? reglages.prixVivant : reglages.prixNettoye;
@@ -47,44 +55,69 @@ export const CommandeSilureCarte: React.FC = () => {
 
   const soumettreCommande = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (enCoursEnvoi) return;
+
+    const poidsFinal = poidsKg > 0 ? poidsKg : 1;
+    const prixTotalFinal = Math.round(poidsFinal * prixAuKg);
+    setPoidsSaisi(String(poidsFinal));
+
     setEnCoursEnvoi(true);
     setErreurCommande("");
 
+    const codeCommandeGenere = `CMD-${Math.floor(1000 + Math.random() * 9000)}`;
+    let codeCommandeEffectif = codeCommandeGenere;
+
     try {
       const nouvelleCommande = await ajouterCommande({
-        codeCommande: "",
+        codeCommande: codeCommandeGenere,
         nomClient,
         telephone,
         preparation,
-        poidsKg,
+        poidsKg: poidsFinal,
         prixAuKg,
-        prixTotal,
+        prixTotal: prixTotalFinal,
         ville,
         quartier,
         remarques,
       });
 
-      if (!nouvelleCommande) {
-        setErreurCommande("Impossible d'enregistrer la commande. Veuillez vérifier votre connexion ou réessayer plus tard.");
-        return;
+      if (nouvelleCommande?.codeCommande) {
+        codeCommandeEffectif = nouvelleCommande.codeCommande;
+      } else {
+        console.warn("Enregistrement Supabase indisponible, redirection WhatsApp de secours activée.");
       }
+    } catch (err) {
+      console.error("Erreur lors de la commande, redirection WhatsApp de secours activée :", err);
+    } finally {
+      const whatsappUrl = genererLienWhatsAppCommande({
+        telephoneBrut: reglages.telephoneBrut || REGLAGES_PAR_DEFAUT.telephoneBrut,
+        codeCommande: codeCommandeEffectif,
+        nomClient,
+        telephoneClient: telephone,
+        preparation,
+        poidsKg: poidsFinal,
+        prixTotal: prixTotalFinal,
+        ville,
+        quartier,
+        remarques,
+        langueClient: langue,
+      });
 
-      setCodeCommandeFinal(nouvelleCommande.codeCommande);
+      setCodeCommandeFinal(codeCommandeEffectif);
+      setLienWhatsAppFinal(whatsappUrl);
       setCommandeReussie(true);
+      setEnCoursEnvoi(false);
+
+      // Redirection directe fiable sur mobile et desktop (évite le blocage popup après await)
+      window.location.href = whatsappUrl;
 
       setTimeout(() => {
-        setCommandeReussie(false);
         setNomClient("");
         setTelephone("");
-        setPoidsKg(3);
+        setPoidsSaisi("3");
         setQuartier("");
         setRemarques("");
       }, 6000);
-    } catch (err) {
-      setErreurCommande("Une erreur est survenue.");
-      console.error("Erreur lors de la commande :", err);
-    } finally {
-      setEnCoursEnvoi(false);
     }
   };
 
@@ -183,9 +216,38 @@ export const CommandeSilureCarte: React.FC = () => {
               <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/50">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Quantité (kg)</label>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setPoidsKg(Math.max(1, +(poidsKg - 0.5).toFixed(1)))} className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"><Minus className="w-4 h-4" /></button>
-                  <span className="text-xl font-black text-slate-900 dark:text-white w-10 text-center">{poidsKg}</span>
-                  <button type="button" onClick={() => setPoidsKg(Math.min(30, +(poidsKg + 0.5).toFixed(1)))} className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"><Plus className="w-4 h-4" /></button>
+                  <button
+                    type="button"
+                    onClick={() => setPoidsSaisi(String(Math.max(1, +((poidsKg || 1) - 0.5).toFixed(2))))}
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    required
+                    aria-label="Quantité en kg"
+                    value={poidsSaisi}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*([.,]\d{0,2})?$/.test(val)) {
+                        setPoidsSaisi(val);
+                      }
+                    }}
+                    onBlur={() => {
+                      const normalise = poidsKg > 0 ? poidsKg : 1;
+                      setPoidsSaisi(String(normalise));
+                    }}
+                    className="text-xl font-black text-slate-900 dark:text-white w-16 text-center bg-transparent border-b border-transparent focus:border-[#28a9ed] outline-none transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPoidsSaisi(String(Math.min(9999, +((poidsKg || 0) + 0.5).toFixed(2))))}
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>

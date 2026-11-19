@@ -32,6 +32,8 @@ export function genererLienWhatsAppCommande(params: ParametresCommandeWhatsApp):
     langueClient,
   } = params;
 
+  const numeroNettoye = telephoneBrut.replace(/\D/g, "");
+  const remarquesNettoyees = remarques?.trim();
   const libellePreparation = preparation === "vivant" ? "Poisson Vivant" : "Poisson Nettoyé & Éviscéré";
   const indicateurLangue = langueClient === "en" ? " (Client anglophone)" : "";
 
@@ -45,10 +47,10 @@ export function genererLienWhatsAppCommande(params: ParametresCommandeWhatsApp):
     `• *Lieu de livraison :* ${ville} (${quartier})\n` +
     `• *Nom du client :* ${nomClient}\n` +
     `• *Contact :* ${telephoneClient}\n` +
-    (remarques ? `• *Précisions :* ${remarques}\n` : "") +
+    (remarquesNettoyees ? `• *Précisions :* ${remarquesNettoyees}\n` : "") +
     `Pouvez-vous me confirmer la disponibilité et le délai de livraison ?`;
 
-  return `https://wa.me/${telephoneBrut}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${numeroNettoye}?text=${encodeURIComponent(message)}`;
 }
 
 /**

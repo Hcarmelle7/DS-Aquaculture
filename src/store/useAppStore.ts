@@ -360,12 +360,14 @@ export const useAppStore = create<EtatApplication>()(
 
       ajouterCommande: async (donneesCommande) => {
         try {
-          const codeAleatoire = `CMD-${Math.floor(1000 + Math.random() * 9000)}`;
+          const codeFinal =
+            donneesCommande.codeCommande?.trim() ||
+            `CMD-${Math.floor(1000 + Math.random() * 9000)}`;
 
           const { data, error } = await supabase
             .from("fish_orders")
             .insert({
-              order_code: codeAleatoire,
+              order_code: codeFinal,
               customer_name: donneesCommande.nomClient,
               phone: donneesCommande.telephone,
               preparation: donneesCommande.preparation,
